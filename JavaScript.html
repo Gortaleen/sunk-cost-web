@@ -1,0 +1,86 @@
+<script>
+
+/*jslint browser, devel, maxlen: 80, single, this, white*/
+/*global $, google*/
+function genericResult(gameRules, numsPlayed, numsDrawn) {
+  'use strict';
+  return numsPlayed + numsDrawn;
+}
+
+var gameFxns = {
+  'Mega Millions': genericResult,
+  'Powerball': genericResult,
+  'default': genericResult
+};
+
+/**
+ * Game class definition
+ */
+function Game(gameName, gameRules, threshold) {
+  'use strict';
+  this.gameName = gameName;
+  this.gameRules = gameRules;
+  this.threshold = threshold;
+}
+Game.prototype.calcResult = function (numsPlayed, numsDrawn) {
+  'use strict';
+  var gameFxn = gameFxns[this.gameName] || gameFxns.default;
+  return gameFxn(this.gameRules, numsPlayed, numsDrawn);
+};
+
+function processPlayedNumArr(arr, data) {
+  'use strict';
+  arr.push({
+    numArr: data[2].split('-'),
+    ball: data[3] || '',
+    bonus: data[4] || '',
+    startDate: data[5] || '',
+    endDate: data[6] || ''
+  });
+  return arr;
+}
+
+function processPlayedNums(obj, data) {
+  'use strict';
+  var gameName = data[1][1];
+  var gameNumArr = data.slice(1).reduce(processPlayedNumArr, []);
+  obj[gameName] = gameNumArr;
+  return obj;
+}
+
+function processDrawnNums() {
+  'use strict';
+  return {};
+}
+
+function processGameRules() {
+  'use strict';
+  return {};
+}
+
+/**
+ * main is where most of the work is done
+ * @param {string} rawDataJsonStr is a stringified json object
+ *                                whose members are data arrays
+ */
+function main(rawDataJsonStr) {
+  'use strict';
+  var rawDataJsonObj = JSON.parse(rawDataJsonStr);
+  var playedNumsObj = rawDataJsonObj.playedNumsArr
+    .reduce(processPlayedNums, {});
+  var drawnNumsObj = rawDataJsonObj.drawnNumsArr
+    .reduce(processDrawnNums, {});
+  var gameRulesObj = rawDataJsonObj.gameRulesArr
+    .reduce(processGameRules, {});
+debugger;
+}
+
+function getDataAndLoadMain() {
+  'use strict';
+  google.script.run.withSuccessHandler(main).getData();
+}
+
+// jquery ready function
+$(getDataAndLoadMain);
+
+</script>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css">
+  <?!= include('Stylesheet') ?>
+</head>
+
+<body>
+  <!-- title -->
+  <div class="container">
+    <h1>LotteryWeb</h1>
+    <table class="table table-bordered table-sm" id="estJackpotsTable">
+      <caption>Estimated Jackpots</caption>
+      <thead>
+        <tr>
+          <th>Game</th>
+          <th>Draw Date</th>
+          <th>Estimated Jackpot</th>
+        </tr>
+      </thead>
+      <tfoot></tfoot>
+      <tbody></tbody>
+    </table>
+    <table class="table table-bordered table-sm" id="recentResults">
+      <caption>Recent Results</caption>
+      <thead>
+        <tr>
+          <th>Game</th>
+          <th>Draw Date</th>
+          <th>Numbers</th>
+          <th>Winnings</th>
+        </tr>
+      </thead>
+      <tfoot></tfoot>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- projected jackpots -->
+  <!-- latest drawing results (that we are active in) -->
+
+  <!-- jQuery library -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <!-- Popper JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.6/umd/popper.min.js"></script>
+  <!-- Latest compiled JavaScript -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js"></script>
+  <?!= include('JavaScript') ?>
+
+</body>
+
+</html>
