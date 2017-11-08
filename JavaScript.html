@@ -2,6 +2,7 @@
 
 /*jslint browser, devel, maxlen: 80, single, this, white*/
 /*global $, google*/
+/******************************************************************************/
 function genericResult(gameRules, numsPlayed, numsDrawn) {
   'use strict';
   return numsPlayed + numsDrawn;
@@ -28,35 +29,86 @@ Game.prototype.calcResult = function (numsPlayed, numsDrawn) {
   return gameFxn(this.gameRules, numsPlayed, numsDrawn);
 };
 
+/******************************************************************************/
+
 function processPlayedNumArr(arr, data) {
   'use strict';
   arr.push({
-    numArr: data[2].split('-'),
-    ball: data[3] || '',
-    bonus: data[4] || '',
-    startDate: data[5] || '',
-    endDate: data[6] || ''
+    numArr: data[0].split('-'),
+    ball: data[1] || '',
+    bonus: data[2] || '',
+    startDate: data[3] || '',
+    endDate: data[4] || ''
   });
   return arr;
 }
 
-function processPlayedNums(obj, data) {
+function processPlayedNums(totalObj, curValObj) {
   'use strict';
-  var gameName = data[1][1];
-  var gameNumArr = data.slice(1).reduce(processPlayedNumArr, []);
-  obj[gameName] = gameNumArr;
+  // slice off header
+  var numArr = curValObj.data.slice(1).reduce(processPlayedNumArr, []);
+  totalObj[curValObj.name] = numArr;
+  return totalObj;
+}
+
+/******************************************************************************/
+
+function processDrawnNumArr(arr, data) {
+  'use strict';
+  arr.push({
+    drawDate: data[0],
+    numArr: data[1].split('-'),
+    jackpot: data[2] || '',
+    ball: data[3] || '',
+    bonus: data[4] || '',
+    nextDrawDate: data[5] || '',
+    estJackpot: data[6] || ''
+  });
+  return arr;
+}
+
+function processDrawnNums(totalObj, curValObj) {
+  'use strict';
+  var numArr = curValObj.data.slice(1).reduce(processDrawnNumArr, []);
+  totalObj[curValObj.name] = numArr;
+  return totalObj;
+}
+
+/******************************************************************************/
+
+function rulesArrToObj(obj, curVal) {
+  'use strict';
+  var matchVal = curVal[1].toLocaleString('en-US', {
+    minimumIntegerDigits: 2
+  });
+  obj[matchVal] = curVal[2];
   return obj;
 }
 
-function processDrawnNums() {
+function processGameRules(curVal) {
   'use strict';
-  return {};
+  var name = curVal.data[1][1];
+  var threshold = curVal.data[2][1];
+  var rules = curVal.data.slice(3).reduce(rulesArrToObj, {});
+  var game = new Game(name, rules, threshold);
+  return game;
 }
 
-function processGameRules() {
+/******************************************************************************/
+
+function displayEstJackpots(curVal) {
   'use strict';
-  return {};
+  var drawnNumsObj = this;
+  var tempObj = drawnNumsObj[curVal.gameName].slice(-1)[0];
+  var date = new Date(tempObj.nextDrawDate);
+  $('table#estJackpotsTable tbody').append('<tr>' +
+    '<td>' + curVal.gameName + '</td>' +
+    '<td>' + date.toLocaleDateString('en-US')  + '</td>' +
+    '<td>' + tempObj.estJackpot + '</td>' +
+    '</tr>');
 }
+
+/******************************************************************************/
 
 /**
  * main is where most of the work is done
@@ -70,15 +122,17 @@ function main(rawDataJsonStr) {
     .reduce(processPlayedNums, {});
   var drawnNumsObj = rawDataJsonObj.drawnNumsArr
     .reduce(processDrawnNums, {});
-  var gameRulesObj = rawDataJsonObj.gameRulesArr
-    .reduce(processGameRules, {});
-debugger;
+  var gameRulesArr = rawDataJsonObj.gameRulesArr
+    .map(processGameRules);
+  gameRulesArr.forEach(displayEstJackpots, drawnNumsObj);
 }
 
 function getDataAndLoadMain() {
   'use strict';
   google.script.run.withSuccessHandler(main).getData();
 }
+
+/******************************************************************************/
 
 // jquery ready function
 $(getDataAndLoadMain);

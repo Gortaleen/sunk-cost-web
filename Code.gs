@@ -8,7 +8,10 @@ function include(filename) {
 
 function getSheetData(sheet) {
   'use strict';
-  return sheet.getDataRange().getValues();
+  return {
+    name: sheet.getName(),
+    data: sheet.getDataRange().getValues()
+  };
 }
 
 /**
