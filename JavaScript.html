@@ -2,34 +2,64 @@
 
 /*jslint browser, devel, maxlen: 80, single, this, white*/
 /*global $, google*/
-/******************************************************************************/
-function genericResult(gameRules, numsPlayed, numsDrawn) {
+
+/****************************** Utilities *************************************/
+
+function dollarStrToInt(dollarStr) {
   'use strict';
-  return 0;
+  var dollarInt = 0;
+  if (dollarStr.match(/^\d$/)) {
+    return Number(dollarStr);
+  }
+  if (dollarStr.match(/^\$\d+(.\d+)?\sMillion$/)) {
+    return Number(dollarStr.match(/\d+(.\d+)?/)[0]) * 1000000;
+  }
+  return undefined;
 }
 
-var gameFxns = {
-  'Mega Millions': genericResult,
-  'Powerball': genericResult,
-  'default': genericResult
-};
+/*********************** Game Class Definition ********************************/
+
+/**
+ * Calculates and returns winnings from generic ruled games such as Mega 
+ * Millions and Powerball.
+ * @param {object} gameRules
+ * @param {object} numsPlayed
+ * @param {object} numsDrawn
+ * @return {number} calculated winnings
+ */
+function genericResult(gameRules, numsPlayed, numsDrawn) {
+  'use strict';
+  var result = gameRules + numsPlayed + numsDrawn;
+  result = 0;
+  return result;
+}
 
 /**
  * Game class definition
+ * @constructor
  */
 function Game(gameName, gameRules, threshold) {
   'use strict';
-  this.gameName = gameName;
+  this.name = gameName;
   this.gameRules = gameRules;
   this.threshold = threshold;
 }
+
+/**
+ *
+ */
 Game.prototype.calcResult = function (numsPlayed, numsDrawn) {
   'use strict';
-  var gameFxn = gameFxns[this.gameName] || gameFxns.default;
+  var gameFxns = {
+    'Mega Millions': genericResult,
+    'Powerball': genericResult,
+    'default': genericResult
+  };
+  var gameFxn = gameFxns[this.name] || gameFxns.default;
   return gameFxn(this.gameRules, numsPlayed, numsDrawn);
 };
 
-/******************************************************************************/
+/******************** Played Numbers object from array ************************/
 
 function processPlayedNumArr(arr, data) {
   'use strict';
@@ -37,8 +67,8 @@ function processPlayedNumArr(arr, data) {
     numArr: data[0].split('-'),
     ball: data[1] || '',
     bonus: data[2] || '',
-    startDate: data[3] || '',
-    endDate: data[4] || ''
+    startDate: data[3] || Date.now(),
+    endDate: data[4] || Date.now()
   });
   return arr;
 }
@@ -51,18 +81,20 @@ function processPlayedNums(totalObj, curValObj) {
   return totalObj;
 }
 
-/******************************************************************************/
+/********************* Drawn Numbers object from array ************************/
 
 function processDrawnNumArr(arr, data) {
   'use strict';
+  var jackpot = dollarStrToInt(data[2]);
+  var estJackpot = dollarStrToInt(data[6]);
   arr.push({
     drawDate: data[0],
     numArr: data[1].split('-'),
-    jackpot: data[2] || '',
+    jackpot: jackpot,
     ball: data[3] || '',
     bonus: data[4] || '',
     nextDrawDate: data[5] || '',
-    estJackpot: data[6] || ''
+    estJackpot: estJackpot
   });
   return arr;
 }
@@ -74,7 +106,7 @@ function processDrawnNums(totalObj, curValObj) {
   return totalObj;
 }
 
-/******************************************************************************/
+/********************** Game Rules object from array **************************/
 
 function rulesArrToObj(obj, curVal) {
   'use strict';
@@ -88,46 +120,80 @@ function rulesArrToObj(obj, curVal) {
 function processGameRules(curVal) {
   'use strict';
   var name = curVal.data[1][1];
-  var threshold = curVal.data[2][1];
+  var threshold = dollarStrToInt(curVal.data[2][1]);
   var rules = curVal.data.slice(3).reduce(rulesArrToObj, {});
   var game = new Game(name, rules, threshold);
   return game;
 }
 
-/******************************************************************************/
+/********************** Display Estimated Jackpots ****************************/
 
-function displayEstJackpots(curVal) {
+function displayEstJackpots(game) {
   'use strict';
   var drawnNumsObj = this;
-  var tempObj = drawnNumsObj[curVal.gameName].slice(-1)[0];
+  var tempObj = drawnNumsObj[game.name].slice(-1)[0];
   var date = new Date(tempObj.nextDrawDate);
   $('table#estJackpotsTable tbody').append('<tr>' +
-    '<td>' + curVal.gameName + '</td>' +
+    '<td>' + game.name + '</td>' +
     '<td>' + date.toLocaleDateString('en-US') + '</td>' +
     '<td>' + tempObj.estJackpot + '</td>' +
     '</tr>');
 }
 
-/******************************************************************************/
+/*********************** Display Recent Results *******************************/
 
-function displayRecentResults(curVal) {
-'use strict';
+function findActiveNum(playedNum) {
+  'use strict';
+  var drawnNum = this;
+  var drawDate = new Date(drawnNum.drawDate);
+  var startDate = new Date(playedNum.startDate);
+  var endDate = new Date(playedNum.endDate);
+  return startDate <= drawDate && drawDate <= endDate;
+}
+
+function activeNumber(drawnNum) {
+  'use strict';
+  var playedNumsArr = this;
+  return playedNumsArr.some(findActiveNum, drawnNum);
+}
+
+function resultThreshold(drawnNum) {
+  'use strict';
+  var game = this;
+  return game.threshold <= drawnNum.jackpot;
+}
+
+function formatValidResults(result) {
+  'use strict';
+  var game = this.game;
+  var playedNumsObj = this.playedNumsObj;
+  var date = new Date(result.drawDate);
+  $('table#recentResultsTable tbody').append('<tr>' +
+    '<td>' + game.name + '</td>' +
+    '<td>' + date.toLocaleDateString('en-US') + '</td>' +
+    '<td>' + result.numArr[0] + '</td>' +
+    '<td>' + result.numArr[1] + '</td>' +
+    '<td>' + result.numArr[2] + '</td>' +
+    '<td>' + result.numArr[3] + '</td>' +
+    '<td>' + result.numArr[4] + '</td>' +
+    '<td>' + result.ball + '</td>' +
+    '<td>' + game.calcResult(playedNumsObj, result) + '</td>' +
+    '</tr>');
+}
+
+function displayRecentResults(game) {
+  'use strict';
   var playedNumsObj = this.playedNumsObj;
   var drawnNumsObj = this.drawnNumsObj;
-  var date = new Date(drawnNumsObj[curVal.gameName][0].drawDate);
-  var tempObj = {};
-  //if (curVal.threshold !> drawnNumsObj.jackpot)
-  $('table#recentResultsTable tbody').append('<tr>' +
-    '<td>' + curVal.gameName + '</td>' +
-    '<td>' + date.toLocaleDateString('en-US')  + '</td>' +
-    '<td>' + drawnNumsObj[curVal.gameName][0].numArr[0] + '</td>' +
-    '<td>' + drawnNumsObj[curVal.gameName][0].numArr[1] + '</td>' +
-    '<td>' + drawnNumsObj[curVal.gameName][0].numArr[2] + '</td>' +
-    '<td>' + drawnNumsObj[curVal.gameName][0].numArr[3] + '</td>' +
-    '<td>' + drawnNumsObj[curVal.gameName][0].numArr[4] + '</td>' +
-    '<td>' + drawnNumsObj[curVal.gameName][0].ball + '</td>' +
-    '<td>' + curVal.calcResult(playedNumsObj, drawnNumsObj) + '</td>' +
-    '</tr>');
+  drawnNumsObj[game.name]
+    .filter(resultThreshold, game)
+    .filter(activeNumber, playedNumsObj[game.name])
+    .slice(-1)
+    .forEach(
+      formatValidResults, {
+        game: game,
+        playedNumsArr: playedNumsObj[game.name]
+      });
 }
 
 /******************************************************************************/
@@ -148,11 +214,10 @@ function main(rawDataJsonStr) {
     .map(processGameRules);
   gameRulesArr.forEach(displayEstJackpots, drawnNumsObj);
   gameRulesArr.forEach(
-  displayRecentResults, 
-  {
-  playedNumsObj: playedNumsObj,
-  drawnNumsObj: drawnNumsObj
-  }
+    displayRecentResults, {
+      playedNumsObj: playedNumsObj,
+      drawnNumsObj: drawnNumsObj
+    }
   );
 }
 
