@@ -26,13 +26,12 @@
       <tfoot></tfoot>
       <tbody></tbody>
     </table>
-    <table class="table table-bordered table-sm" id="recentResultsTable">
+    <table class="table table-bordered table-sm table-hover" id="recentResultsTable">
       <caption>Recent Results</caption>
       <thead>
         <tr>
           <th>Game</th>
           <th>Draw Date</th>
-          <th colspan="6">Numbers</th>
           <th>Winnings</th>
         </tr>
       </thead>
@@ -41,15 +40,13 @@
     </table>
   </div>
 
-  <!-- projected jackpots -->
-  <!-- latest drawing results (that we are active in) -->
-
   <!-- jQuery library -->
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <!-- Popper JS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.6/umd/popper.min.js"></script>
   <!-- Latest compiled JavaScript -->
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js"></script>
+  <?!= include('JsClasses') ?>
   <?!= include('JavaScript') ?>
 
 </body>

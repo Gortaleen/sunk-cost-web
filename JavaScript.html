@@ -7,7 +7,6 @@
 
 function dollarStrToInt(dollarStr) {
   'use strict';
-  var dollarInt = 0;
   if (dollarStr.match(/^\d$/)) {
     return Number(dollarStr);
   }
@@ -16,48 +15,6 @@ function dollarStrToInt(dollarStr) {
   }
   return undefined;
 }
-
-/*********************** Game Class Definition ********************************/
-
-/**
- * Calculates and returns winnings from generic ruled games such as Mega 
- * Millions and Powerball.
- * @param {object} gameRules
- * @param {object} numsPlayed
- * @param {object} numsDrawn
- * @return {number} calculated winnings
- */
-function genericResult(gameRules, numsPlayed, numsDrawn) {
-  'use strict';
-  var result = gameRules + numsPlayed + numsDrawn;
-  result = 0;
-  return result;
-}
-
-/**
- * Game class definition
- * @constructor
- */
-function Game(gameName, gameRules, threshold) {
-  'use strict';
-  this.name = gameName;
-  this.gameRules = gameRules;
-  this.threshold = threshold;
-}
-
-/**
- *
- */
-Game.prototype.calcResult = function (numsPlayed, numsDrawn) {
-  'use strict';
-  var gameFxns = {
-    'Mega Millions': genericResult,
-    'Powerball': genericResult,
-    'default': genericResult
-  };
-  var gameFxn = gameFxns[this.name] || gameFxns.default;
-  return gameFxn(this.gameRules, numsPlayed, numsDrawn);
-};
 
 /******************** Played Numbers object from array ************************/
 
@@ -142,6 +99,11 @@ function displayEstJackpots(game) {
 
 /*********************** Display Recent Results *******************************/
 
+/**
+ * This is used as the criteria for an array some function.
+ * @param {object} drawnNum is an object containing result data for one drawing.
+ * @return {boolean}
+ */
 function findActiveNum(playedNum) {
   'use strict';
   var drawnNum = this;
@@ -151,36 +113,48 @@ function findActiveNum(playedNum) {
   return startDate <= drawDate && drawDate <= endDate;
 }
 
+/**
+ * This is used as the criteria for an array filter.
+ * @param {object} drawnNum is an object containing result data for one drawing.
+ * @return {boolean}
+ */
 function activeNumber(drawnNum) {
   'use strict';
   var playedNumsArr = this;
   return playedNumsArr.some(findActiveNum, drawnNum);
 }
 
+/**
+ * This is used as the criteria for an array filter.
+ * @param {object} drawnNum is an object containing result data for one drawing.
+ * @return {boolean}
+ */
 function resultThreshold(drawnNum) {
   'use strict';
   var game = this;
   return game.threshold <= drawnNum.jackpot;
 }
 
+/**
+ * @param {object} result is an object containing result data for one drawing.
+ */
 function formatValidResults(result) {
   'use strict';
   var game = this.game;
-  var playedNumsObj = this.playedNumsObj;
+  var playedArr = this.playedNumsArr;
   var date = new Date(result.drawDate);
-  $('table#recentResultsTable tbody').append('<tr>' +
+  $('table#recentResultsTable tbody').append(
+    '<tr data-toggle="tooltip" title="View details">' +
     '<td>' + game.name + '</td>' +
     '<td>' + date.toLocaleDateString('en-US') + '</td>' +
-    '<td>' + result.numArr[0] + '</td>' +
-    '<td>' + result.numArr[1] + '</td>' +
-    '<td>' + result.numArr[2] + '</td>' +
-    '<td>' + result.numArr[3] + '</td>' +
-    '<td>' + result.numArr[4] + '</td>' +
-    '<td>' + result.ball + '</td>' +
-    '<td>' + game.calcResult(playedNumsObj, result) + '</td>' +
-    '</tr>');
+    '<td>' + game.calcResult(playedArr, result) + '</td>' +
+    '</tr>'
+  );
 }
 
+/**
+ * @param {object} game is an instance of the Game class
+ */
 function displayRecentResults(game) {
   'use strict';
   var playedNumsObj = this.playedNumsObj;
@@ -193,13 +167,14 @@ function displayRecentResults(game) {
       formatValidResults, {
         game: game,
         playedNumsArr: playedNumsObj[game.name]
-      });
+      }
+    );
 }
 
-/******************************************************************************/
+/*************************** Main Function ************************************/
 
 /**
- * main is where most of the work is done
+ * main
  * @param {string} rawDataJsonStr is a stringified json object
  *                                whose members are data arrays
  */
@@ -223,6 +198,9 @@ function main(rawDataJsonStr) {
 
 function getDataAndLoadMain() {
   'use strict';
+  // bootstrap requirement
+  $('[data-toggle="tooltip"]').tooltip();
+  // get data from spreadsheets then display
   google.script.run.withSuccessHandler(main).getData();
 }
 

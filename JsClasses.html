@@ -1,0 +1,82 @@
+<script>
+
+/*jslint browser, devel, maxlen: 80, single, this, white*/
+/*global $, google*/
+
+/*********************** Game Class Definition ********************************/
+
+function findMatches(playedObj) {
+  'use strict';
+  var drawnObj = this.drawnObj;
+  var gameRules = this.gameRules;
+  var numMatches = playedObj.numArr.map(
+      function (num) {
+        var drawnArr = this;
+        return drawnArr.indexOf(num);
+      }, drawnObj.numArr)
+    .filter(
+      function (curVal) {
+        return curVal > 0;
+      })
+    .length;
+  var ballMatches = (playedObj.ball === drawnObj.ball) ? '1' : '0';
+  var result = gameRules[numMatches.toString() + ballMatches] || 0;
+  if (result.toString().toLowerCase() === 'jackpot') {
+    return drawnObj.jackpot;
+  }
+  if (drawnObj.bonus === playedObj.bonus) {
+    return result * drawnObj.bonus;
+  }
+  return result;
+}
+
+/**
+ * Calculates and returns winnings from generically ruled games such as Mega 
+ * Millions and Powerball.
+ * @param {object} gameRules
+ * @param {object} numsPlayed
+ * @param {object} numsDrawn
+ * @return {number} calculated winnings
+ */
+function genericResult(gameRules, playedArr, drawnObj) {
+  'use strict';
+  var result = playedArr.map(
+      findMatches, {
+        drawnObj: drawnObj,
+        gameRules: gameRules
+      })
+    .reduce(
+      function (total, curVal) {
+        return total + curVal;
+      }, 0);
+  return result;
+}
+
+/**
+ * Game class definition
+ * @constructor
+ */
+function Game(gameName, gameRules, threshold) {
+  'use strict';
+  this.name = gameName;
+  this.gameRules = gameRules;
+  this.threshold = threshold;
+}
+
+/**
+ *
+ */
+Game.prototype.calcResult = function (playedArr, drawnObj) {
+  'use strict';
+  var gameFxns = {
+    'Mega Millions': genericResult,
+    'Powerball': genericResult,
+    'default': genericResult
+  };
+  var gameFxn = gameFxns[this.name] || gameFxns.default;
+  return gameFxn(this.gameRules, playedArr, drawnObj);
+};
+
+/******************************************************************************/
+
+</script>
