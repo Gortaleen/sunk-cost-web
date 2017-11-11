@@ -5,19 +5,21 @@
 
 /*********************** Game Class Definition ********************************/
 
+/**
+ * @param {object} playedObj
+ * @this {object}
+ */
 function findMatches(playedObj) {
   'use strict';
   var drawnObj = this.drawnObj;
   var gameRules = this.gameRules;
-  var numMatches = playedObj.numArr.map(
+  var numMatches = playedObj.numArr
+    .map(
       function (num) {
         var drawnArr = this;
         return drawnArr.indexOf(num);
       }, drawnObj.numArr)
-    .filter(
-      function (curVal) {
-        return curVal > 0;
-      })
+    .filter((curVal) => curVal > 0)
     .length;
   var ballMatches = (playedObj.ball === drawnObj.ball) ? '1' : '0';
   var result = gameRules[numMatches.toString() + ballMatches] || 0;
@@ -45,10 +47,7 @@ function genericResult(gameRules, playedArr, drawnObj) {
         drawnObj: drawnObj,
         gameRules: gameRules
       })
-    .reduce(
-      function (total, curVal) {
-        return total + curVal;
-      }, 0);
+    .reduce((total, curVal) => total + curVal, 0);
   return result;
 }
 
@@ -56,9 +55,10 @@ function genericResult(gameRules, playedArr, drawnObj) {
  * Game class definition
  * @constructor
  */
-function Game(gameName, gameRules, threshold) {
+function Game(gameName, gameId, gameRules, threshold) {
   'use strict';
   this.name = gameName;
+  this.id = gameId;
   this.gameRules = gameRules;
   this.threshold = threshold;
 }

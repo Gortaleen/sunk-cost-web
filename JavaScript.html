@@ -77,23 +77,34 @@ function rulesArrToObj(obj, curVal) {
 function processGameRules(curVal) {
   'use strict';
   var name = curVal.data[1][1];
+  var id = curVal.data[0][1];
   var threshold = dollarStrToInt(curVal.data[2][1]);
   var rules = curVal.data.slice(3).reduce(rulesArrToObj, {});
-  var game = new Game(name, rules, threshold);
+  var game = new Game(name, id, rules, threshold);
   return game;
 }
 
 /********************** Display Estimated Jackpots ****************************/
 
-function displayEstJackpots(game) {
+function displayEstJackpots(game, index) {
   'use strict';
   var drawnNumsObj = this;
   var tempObj = drawnNumsObj[game.name].slice(-1)[0];
   var date = new Date(tempObj.nextDrawDate);
+  if (index === 0) {
+    $('table#estJackpotsTable tbody').empty();
+  }
   $('table#estJackpotsTable tbody').append('<tr>' +
     '<td>' + game.name + '</td>' +
     '<td>' + date.toLocaleDateString('en-US') + '</td>' +
-    '<td>' + tempObj.estJackpot + '</td>' +
+    '<td>' +
+    tempObj.estJackpot
+    .toLocaleString(
+      'en-US', {
+        style: 'currency',
+        currency: 'USD'
+      }) +
+    '</td>' +
     '</tr>');
 }
 
@@ -138,16 +149,27 @@ function resultThreshold(drawnNum) {
 /**
  * @param {object} result is an object containing result data for one drawing.
  */
-function formatValidResults(result) {
+function formatValidResults(result, index) {
   'use strict';
   var game = this.game;
   var playedArr = this.playedNumsArr;
   var date = new Date(result.drawDate);
+  if (index === 0) {
+    $('table#recentResultsTable tbody').empty();
+  }
   $('table#recentResultsTable tbody').append(
-    '<tr data-toggle="tooltip" title="View details">' +
+    '<tr data-toggle="tooltip" title="View details" ' +
+    'id="game-' + game.id + '">' +
     '<td>' + game.name + '</td>' +
     '<td>' + date.toLocaleDateString('en-US') + '</td>' +
-    '<td>' + game.calcResult(playedArr, result) + '</td>' +
+    '<td>' +
+    game.calcResult(playedArr, result)
+    .toLocaleString(
+      'en-US', {
+        style: 'currency',
+        currency: 'USD'
+      }) +
+    '</td>' +
     '</tr>'
   );
 }
@@ -204,9 +226,11 @@ function getDataAndLoadMain() {
   google.script.run.withSuccessHandler(main).getData();
 }
 
-/******************************************************************************/
+/***************************** jQuery functions *******************************/
 
 // jquery ready function
 $(getDataAndLoadMain);
+
+/******************************************************************************/
 
 </script>
