@@ -14,7 +14,7 @@
         if (dollarStr.match(/^\d$/)) {
             return Number(dollarStr);
         }
-        if (dollarStr.match(/^\$\d+(,\d{3})*(.\d+)?\sMillion$/)) {
+        if (dollarStr.match(/^\$\d+(,\d{3})*(\.\d+)?\sMillion$/)) {
             numStr = dollarStr.match(/\d+(,\d{3})*(\.\d+)?/)[0]
                 .replace(',', '');
             return Number(numStr) * 1000000;
@@ -128,6 +128,16 @@
         return game;
     }
 
+    /**************** Compare Drawn to Played Numbers Page ********************/
+
+    /**
+     * @param {string} gameName
+     * @param {number} datePrimitive
+     */
+    function compareDrawnToPlayed(gameName, datePrimitive) {
+        'use strict';
+    }
+    
     /*************************** View Drawings Page ***************************/
 
     /**
@@ -143,32 +153,35 @@
             'table-condensed"></table>');
         $('table').append('<caption></caption>');
         $('caption').html(gameName.replace(/\s/g, '&nbsp;') + '&nbsp;Drawings');
-        $('table').append('<thead><tr></tr></thead>');
-        $('table').append('<tbody></tbody>');
+        $('table').append('<thead class="text-center"><tr></tr></thead>');
+        $('table').append('<tbody class="text-center"></tbody>');
         $('thead tr').append(
-            '<th>Date</th><th>Num1</th><th>Num2</th><th>Num3</th>' +
-            '<th>Num4</th><th>Num5</th><th>Ball</th><th>Multiplier</th>' +
-            '<th>Jackpot</th>');
+            '<th class="text-left">Date</th><th>Num1</th><th>Num2</th>' +
+            '<th>Num3</th><th>Num4</th><th>Num5</th><th>Ball</th>' + 
+            '<th>Multiplier</th><th class="text-right">Jackpot</th>');
         tempArr.reverse().slice(0, 20).forEach(function (curVal, index) {
             var date = new Date(curVal.drawDate);
-            $('tbody').append('<tr></tr>');
+            $('tbody').append(
+                '<tr title="Compare drawn numbers to played numbers" ' +
+                'onClick="compareDrawnToPlayed(\'' + gameName + '\', ' + 
+                date.valueOf() + ')"></tr>');
             $('tbody tr:eq(' + index + ')').append(
-                '<td>' + date.toLocaleDateString('en-US') + '</td>' +
-                '<td>' + curVal.numArr[0] + '</td>' + 
-                '<td>' + curVal.numArr[1] + '</td>' + 
-                '<td>' + curVal.numArr[2] + '</td>' + 
-                '<td>' + curVal.numArr[3] + '</td>' + 
-                '<td>' + curVal.numArr[4] + '</td>' + 
+                '<td class="text-left">' + date.toLocaleDateString(
+                    'en-US', {
+                        month: '2-digit',
+                        day: '2-digit',
+                        year: 'numeric'
+                    }) + '</td>' +
+                '<td>' + curVal.numArr[0] + '</td>' +
+                '<td>' + curVal.numArr[1] + '</td>' +
+                '<td>' + curVal.numArr[2] + '</td>' +
+                '<td>' + curVal.numArr[3] + '</td>' +
+                '<td>' + curVal.numArr[4] + '</td>' +
                 '<td>' + curVal.ball + '</td>' +
                 '<td>' + curVal.bonus + '</td>' +
-                '<td>' + integerToUSD(curVal.jackpot) + '</td>');
+                '<td class="text-right">' + 
+                integerToUSD(curVal.jackpot) + '</td>');
         });
-    }
-
-    /*************************** View Winnings Page ***************************/
-
-    function viewWinnings(gameName) {
-        'use strict';
     }
 
     /********************** Display Estimated Jackpots ************************/
@@ -184,7 +197,12 @@
             '<tr title="View ' + game.name + ' Drawings"' +
             'onClick="viewDrawings(\'' + game.name + '\')">' +
             '<td>' + game.name + '</td>' +
-            '<td>' + date.toLocaleDateString('en-US') + '</td>' +
+            '<td>' + date.toLocaleDateString(
+                'en-US', {
+                    month: '2-digit',
+                    day: '2-digit',
+                    year: 'numeric'
+                }) + '</td>' +
             '<td>' +
             integerToUSD(tempObj.estJackpot) +
             '</td>' +
@@ -246,9 +264,15 @@
         }
         $('table#recentResultsTable tbody').append(
             '<tr data-toggle="tooltip" title="View more ' + game.name +
-            ' Winnings" onClick="viewWinnings(\'' + game.name + '\')">' +
+            ' Winnings" onClick="compareDrawnToPlayed(\'' + game.name + '\', ' +
+            date.valueOf() + ')">' +
             '<td>' + game.name + '</td>' +
-            '<td>' + date.toLocaleDateString('en-US') + '</td>' +
+            '<td>' + date.toLocaleDateString(
+                'en-US', {
+                    month: '2-digit',
+                    day: '2-digit',
+                    year: 'numeric'
+                }) + '</td>' +
             '<td>' +
             integerToUSD(game.calcResult(playedArr, result)) +
             '</td>' +
@@ -291,9 +315,9 @@
         /** @global */
         window.gameRulesArr = rawDataJsonObj.gameRulesArr
             .map(classifyGameRules);
-//        window.gameRulesArr.forEach(displayEstJackpots);
-//        window.gameRulesArr.forEach(displayRecentResults);
-viewDrawings('Powerball');
+        //        window.gameRulesArr.forEach(displayEstJackpots);
+        //        window.gameRulesArr.forEach(displayRecentResults);
+        viewDrawings('Powerball');
     }
 
     function getDataAndLoadMain() {
@@ -308,4 +332,6 @@ viewDrawings('Powerball');
 
     // jquery ready function
     $(getDataAndLoadMain);
+
+    /**************************************************************************/
 </script>
