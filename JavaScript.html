@@ -42,6 +42,28 @@
             });
     }
 
+// TODO: give this fxn a better name
+/**
+* Doug Crawfords "Module Pattern" for reducing problems related to the use of global variable
+*/
+    var gameObjects = function () {
+        "use strict";
+        var objects = {};
+
+        function set(input) {
+            objects = input;
+        }
+
+        function get() {
+            return objects;
+        }
+        return {
+            get: get,
+            set: set
+        };
+    };
+    var gameObjs = gameObjects();
+
     /******************** Played Numbers object from array ********************/
 
     /**
@@ -120,11 +142,13 @@
      */
     function classifyGameRules(curVal) {
         'use strict';
-        var name = curVal.data[1][1];
         var id = curVal.data[0][1];
-        var threshold = dollarStrToInt(curVal.data[2][1]);
-        var rules = curVal.data.slice(3).reduce(getMatchValuesObj, {});
-        var game = new Game(name, id, rules, threshold);
+        var name = curVal.data[1][1];
+        var ball = curVal.data[2][1];
+        var bonus = curVal.data[3][1];
+        var threshold = dollarStrToInt(curVal.data[4][1]);
+        var rules = curVal.data.slice(5).reduce(getMatchValuesObj, {});
+        var game = new Game(name, id, ball, bonus, rules, threshold);
         return game;
     }
 
@@ -136,8 +160,20 @@
      */
     function compareDrawnToPlayed(gameName, datePrimitive) {
         'use strict';
+        var game = gameObjs.get()[gameName];
+        $('div').empty();
+        $('div').append('<h1>LotteryWeb</h1>');
+        $('div').append('<table class="table table-condensed table-striped">' +
+            '<caption></caption><thead></thead></table>');
+        $('caption').append(gameName.replace(/\s/g, '&nbsp;') + '&nbsp;Results');
+        $('thead').append(
+            '<tr><th>Date</th><th>Num1</th><th>Num2</th><th>Num3</th>' +
+            '<th>Num4</th><th>Num5</th><th>' + game.ball + '</th>' +
+            '<th>' + game.bonus.replace(' ', '&nbsp;') + '</th>' +
+            '<th>Winnings!</th>' +
+            '</tr>');
     }
-    
+
     /*************************** View Drawings Page ***************************/
 
     /**
@@ -146,6 +182,7 @@
     function viewDrawings(gameName) {
         'use strict';
         var tempArr = window.drawnNumsObj[gameName];
+        var game = gameObjs.get()[gameName];
         $('div').empty();
         $('div').append('<h1>LotteryWeb</h1>');
         $('div').append(
@@ -157,13 +194,13 @@
         $('table').append('<tbody class="text-center"></tbody>');
         $('thead tr').append(
             '<th class="text-left">Date</th><th>Num1</th><th>Num2</th>' +
-            '<th>Num3</th><th>Num4</th><th>Num5</th><th>Ball</th>' + 
-            '<th>Multiplier</th><th class="text-right">Jackpot</th>');
+            '<th>Num3</th><th>Num4</th><th>Num5</th><th>' + game.ball + '</th>' +
+            '<th>' + game.bonus + '</th><th class="text-right">Jackpot</th>');
         tempArr.reverse().slice(0, 20).forEach(function (curVal, index) {
             var date = new Date(curVal.drawDate);
             $('tbody').append(
                 '<tr title="Compare drawn numbers to played numbers" ' +
-                'onClick="compareDrawnToPlayed(\'' + gameName + '\', ' + 
+                'onClick="compareDrawnToPlayed(\'' + gameName + '\', ' +
                 date.valueOf() + ')"></tr>');
             $('tbody tr:eq(' + index + ')').append(
                 '<td class="text-left">' + date.toLocaleDateString(
@@ -179,7 +216,7 @@
                 '<td>' + curVal.numArr[4] + '</td>' +
                 '<td>' + curVal.ball + '</td>' +
                 '<td>' + curVal.bonus + '</td>' +
-                '<td class="text-right">' + 
+                '<td class="text-right">' +
                 integerToUSD(curVal.jackpot) + '</td>');
         });
     }
@@ -306,6 +343,8 @@
     function main(rawDataJsonStr) {
         'use strict';
         var rawDataJsonObj = JSON.parse(rawDataJsonStr);
+        var gameRulesArr = rawDataJsonObj.gameRulesArr
+            .map(classifyGameRules);
         /** @global */
         window.playedNumsObj = rawDataJsonObj.playedNumsArr
             .reduce(processPlayedNums, {});
@@ -313,11 +352,14 @@
         window.drawnNumsObj = rawDataJsonObj.drawnNumsArr
             .reduce(processDrawnNums, {});
         /** @global */
-        window.gameRulesArr = rawDataJsonObj.gameRulesArr
-            .map(classifyGameRules);
-        //        window.gameRulesArr.forEach(displayEstJackpots);
-        //        window.gameRulesArr.forEach(displayRecentResults);
-        viewDrawings('Powerball');
+        window.games = gameRulesArr.reduce(function (obj, game) {
+            obj[game.name] = game;
+            return obj;
+        }, {});
+        gameObjs.set(window.games);
+        //gameRulesArr.forEach(displayEstJackpots);
+        //gameRulesArr.forEach(displayRecentResults);
+        viewDrawings('Mega Millions');
     }
 
     function getDataAndLoadMain() {
