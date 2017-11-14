@@ -24,20 +24,20 @@ function getData() {
   var drawnNumsSs = {};
   var gameRulesSs = {};
   var lotteryJsonStr = '';
-  // TODO: uncomment the cache related code
-  //  var cache = CacheService.getScriptCache();
-  //  var cached = cache.get("lottery-json-string");
-  //  if (cached != null) {
-  //    return cached;
-  //  }
+  // TODO: uncomment cache code when live.
+//  var cache = CacheService.getScriptCache();
+//  var cached = cache.get("lottery-json-string");
+//  if (cached != null) {
+//    return cached;
+//  }
   playedNumsSs = SpreadsheetApp.openById(
-    PropertiesService.getScriptProperties().getProperty('playedNumsSsId')
+    PropertiesService.getScriptProperties().getProperties().playedNumsSsId
   );
   drawnNumsSs = SpreadsheetApp.openById(
-    PropertiesService.getScriptProperties().getProperty('drawnNumsSsId')
+    PropertiesService.getScriptProperties().getProperties().drawnNumsSsId
   );
   gameRulesSs = SpreadsheetApp.openById(
-    PropertiesService.getScriptProperties().getProperty('gameRulesSsId')
+    PropertiesService.getScriptProperties().getProperties().gameRulesSsId
   );
   lotteryJsonStr = JSON.stringify(
     {
@@ -46,7 +46,7 @@ function getData() {
       gameRulesArr: gameRulesSs.getSheets().map(getSheetData)
     }
   );
-  //  cache.put("lottery-json-string", lotteryJsonStr, 3600); // cache for one hour
+//  cache.put("lottery-json-string", lotteryJsonStr, 3600); // cache for one hour
   return lotteryJsonStr;
 }
 

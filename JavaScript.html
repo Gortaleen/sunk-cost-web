@@ -10,14 +10,18 @@
      */
     function dollarStrToInt(dollarStr) {
         'use strict';
-        var numStr = '';
-        if (dollarStr.match(/^\d$/)) {
-            return Number(dollarStr);
+        if (typeof dollarStr === 'number') {
+            return dollarStr;
+        }
+        if (dollarStr.match(/^\$?\d+(,\d{3})*(\.\d+)?$/)) {
+            return Number(
+                dollarStr.match(/\d+(,\d{3})*(\.\d+)?/)[0]
+                .replace(',', ''));
         }
         if (dollarStr.match(/^\$\d+(,\d{3})*(\.\d+)?\sMillion$/)) {
-            numStr = dollarStr.match(/\d+(,\d{3})*(\.\d+)?/)[0]
-                .replace(',', '');
-            return Number(numStr) * 1000000;
+            return Number(
+                dollarStr.match(/\d+(,\d{3})*(\.\d+)?/)[0]
+                .replace(',', '')) * 1000000;
         }
         return undefined;
     }
@@ -30,10 +34,9 @@
         'use strict';
         var dividend = num;
         var divisor = 1000000;
-        var quotient = dividend / divisor;
-        if (quotient > 0.0) {
-            quotient += 0;
-            return '$' + quotient + ' Million';
+        var quotient = (dividend / divisor) + 0;
+        if (quotient >= 1) {
+            return '$' + quotient + '&nbsp;Million';
         }
         return dividend.toLocaleString(
             'en-US', {
@@ -42,11 +45,12 @@
             });
     }
 
-// TODO: give this fxn a better name
-/**
-* Doug Crawfords "Module Pattern" for reducing problems related to the use of global variable
-*/
-    var gameObjects = function () {
+    // TODO: give this fxn a better name
+    /**
+     * Doug Crockfords "Module Pattern" for reducing problems related to the
+     * use of global variables.
+     */
+    var gameObjs = (function () {
         "use strict";
         var objects = {};
 
@@ -61,8 +65,41 @@
             get: get,
             set: set
         };
-    };
-    var gameObjs = gameObjects();
+    }());
+
+    var playsObjs = (function () {
+        "use strict";
+        var objects = {};
+
+        function set(input) {
+            objects = input;
+        }
+
+        function get() {
+            return objects;
+        }
+        return {
+            get: get,
+            set: set
+        };
+    }());
+
+    var drawsObjs = (function () {
+        "use strict";
+        var objects = {};
+
+        function set(input) {
+            objects = input;
+        }
+
+        function get() {
+            return objects;
+        }
+        return {
+            get: get,
+            set: set
+        };
+    }());
 
     /******************** Played Numbers object from array ********************/
 
@@ -161,17 +198,56 @@
     function compareDrawnToPlayed(gameName, datePrimitive) {
         'use strict';
         var game = gameObjs.get()[gameName];
+        var plays = playsObjs.get()[gameName];
+        var draws = drawsObjs.get()[gameName];
+        var date = new Date(datePrimitive);
         $('div').empty();
         $('div').append('<h1>LotteryWeb</h1>');
-        $('div').append('<table class="table table-condensed table-striped">' +
-            '<caption></caption><thead></thead></table>');
-        $('caption').append(gameName.replace(/\s/g, '&nbsp;') + '&nbsp;Results');
+        $('div').append(
+            '<table class="table table-condensed table-striped ' +
+            'table-bordered"><caption></caption><thead></thead>' +
+            '<tfoot></tfoot><tbody></tbody></table>');
+        $('caption').append(
+            gameName.replace(/\s/g, '&nbsp;') + '&nbsp;Results for ' +
+            date.toLocaleDateString('en-US', {
+                month: '2-digit',
+                day: '2-digit',
+                year: 'numeric'
+            })
+        );
+        // TODO: base header on game chacteristics.  I.e., don't display bonus
+        // ball header for games that don't use a bonus ball.
         $('thead').append(
-            '<tr><th>Date</th><th>Num1</th><th>Num2</th><th>Num3</th>' +
+            '<tr><th>Num1</th><th>Num2</th><th>Num3</th>' +
             '<th>Num4</th><th>Num5</th><th>' + game.ball + '</th>' +
             '<th>' + game.bonus.replace(' ', '&nbsp;') + '</th>' +
             '<th>Winnings!</th>' +
             '</tr>');
+        // TODO: for one day list numbers played and check for matches with
+        // the day's drawing.
+        plays.forEach((curVal) => $('tbody').append(
+            '<tr>' +
+            '<td>' + curVal.numArr[0] + '</td>' +
+            '<td>' + curVal.numArr[1] + '</td>' +
+            '<td>' + curVal.numArr[2] + '</td>' +
+            '<td>' + curVal.numArr[3] + '</td>' +
+            '<td>' + curVal.numArr[4] + '</td>' +
+            '<td>' + curVal.ball + '</td>' +
+            '<td>' + curVal.bonus + '</td>' +
+            '<td>$0</td>' +
+            '</tr>'
+        ));
+        plays.startDate;
+        plays.endDate;
+        plays.ball;
+        plays.bonus;
+        draws.numArr;
+        draws.drawDate;
+        draws.ball;
+        draws.bonus;
+        draws.jackpot;
+        $('tfoot').append(
+            '<tr><th colspan="6"></th><th>Total:</th><th>$0</th></tr>');
     }
 
     /*************************** View Drawings Page ***************************/
@@ -181,7 +257,7 @@
      */
     function viewDrawings(gameName) {
         'use strict';
-        var tempArr = window.drawnNumsObj[gameName];
+        var tempArr = drawsObjs.get()[gameName];
         var game = gameObjs.get()[gameName];
         $('div').empty();
         $('div').append('<h1>LotteryWeb</h1>');
@@ -194,8 +270,9 @@
         $('table').append('<tbody class="text-center"></tbody>');
         $('thead tr').append(
             '<th class="text-left">Date</th><th>Num1</th><th>Num2</th>' +
-            '<th>Num3</th><th>Num4</th><th>Num5</th><th>' + game.ball + '</th>' +
-            '<th>' + game.bonus + '</th><th class="text-right">Jackpot</th>');
+            '<th>Num3</th><th>Num4</th><th>Num5</th>' +
+            '<th>' + game.ball + '</th><th>' + game.bonus + '</th>' +
+            '<th class="text-right">Jackpot</th>');
         tempArr.reverse().slice(0, 20).forEach(function (curVal, index) {
             var date = new Date(curVal.drawDate);
             $('tbody').append(
@@ -225,7 +302,7 @@
 
     function displayEstJackpots(game, index) {
         'use strict';
-        var tempObj = window.drawnNumsObj[game.name].slice(-1)[0];
+        var tempObj = drawsObjs.get()[game.name].slice(-1)[0];
         var date = new Date(tempObj.nextDrawDate);
         if (index === 0) {
             $('table#estJackpotsTable tbody').empty();
@@ -321,14 +398,14 @@
      */
     function displayRecentResults(game) {
         'use strict';
-        window.drawnNumsObj[game.name]
+        drawsObjs.get()[game.name]
             .filter(resultThreshold, game)
-            .filter(activeNumber, window.playedNumsObj[game.name])
+            .filter(activeNumber, playsObjs.get()[game.name])
             .slice(-1)
             .forEach(
                 formatValidResults, {
                     game: game,
-                    playedNumsArr: window.playedNumsObj[game.name]
+                    playedNumsArr: playsObjs.get()[game.name]
                 });
     }
 
@@ -345,21 +422,23 @@
         var rawDataJsonObj = JSON.parse(rawDataJsonStr);
         var gameRulesArr = rawDataJsonObj.gameRulesArr
             .map(classifyGameRules);
-        /** @global */
-        window.playedNumsObj = rawDataJsonObj.playedNumsArr
+        var playedNumsObj = rawDataJsonObj.playedNumsArr
             .reduce(processPlayedNums, {});
-        /** @global */
-        window.drawnNumsObj = rawDataJsonObj.drawnNumsArr
+        var drawnNumsObj = rawDataJsonObj.drawnNumsArr
             .reduce(processDrawnNums, {});
-        /** @global */
-        window.games = gameRulesArr.reduce(function (obj, game) {
+        var games = gameRulesArr.reduce(function (obj, game) {
             obj[game.name] = game;
             return obj;
         }, {});
-        gameObjs.set(window.games);
-        //gameRulesArr.forEach(displayEstJackpots);
-        //gameRulesArr.forEach(displayRecentResults);
-        viewDrawings('Mega Millions');
+        /** @global */
+        gameObjs.set(games);
+        /** @global */
+        playsObjs.set(playedNumsObj);
+        /** @global */
+        drawsObjs.set(drawnNumsObj);
+        gameRulesArr.forEach(displayEstJackpots);
+        gameRulesArr.forEach(displayRecentResults);
+        //viewDrawings('Mega Millions');
     }
 
     function getDataAndLoadMain() {
