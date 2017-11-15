@@ -217,10 +217,14 @@
         );        
         $('div').append(
             '<table class="table table-condensed table-striped ' +
-            'table-bordered"><caption></caption><thead></thead>' +
-            '<tfoot></tfoot><tbody></tbody></table>');
+            'table-bordered">' +
+            '<caption></caption>' +
+            '<thead></thead>' +
+            '<tfoot></tfoot>' + 
+            '<tbody></tbody>' + 
+            '</table>');
         $('caption').append(
-            gameName.replace(/\s/g, '&nbsp;') + '&nbsp;Results for ' +
+            gameName.replace(/\s/g, '&nbsp;') + '&nbsp;' +
             date.toLocaleDateString('en-US', {
                 month: '2-digit',
                 day: '2-digit',
@@ -285,7 +289,7 @@
             '<table class="table table-hover table-bordered ' +
             'table-condensed"></table>');
         $('table').append('<caption></caption>');
-        $('caption').html(gameName.replace(/\s/g, '&nbsp;') + '&nbsp;Drawings');
+        $('caption').html(gameName.replace(/\s/g, '&nbsp;'));
         $('table').append('<thead class="text-center"><tr></tr></thead>');
         $('table').append('<tbody class="text-center"></tbody>');
         $('thead tr').append(
