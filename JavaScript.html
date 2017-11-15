@@ -257,10 +257,18 @@
      */
     function viewDrawings(gameName) {
         'use strict';
-        var tempArr = drawsObjs.get()[gameName];
+        var tempArr = drawsObjs.get()[gameName]
+            .slice(); // clone array to protect from reverse method
         var game = gameObjs.get()[gameName];
         $('div').empty();
         $('div').append('<h1>LotteryWeb</h1>');
+        $('div').append(
+            '<ol class="breadcrumb">' +
+            '<li class="breadcrumb-item"><a href="javascript:home()">' +
+            'Home</a></li>' +
+            '<li class="breadcrumb-item active">Drawings</li>' +
+            '</ol>'
+        );
         $('div').append(
             '<table class="table table-hover table-bordered ' +
             'table-condensed"></table>');
@@ -409,6 +417,57 @@
                 });
     }
 
+    /************************** View Home Screen ******************************/
+
+    /**
+     *
+     */
+    function home() {
+        'use strict';
+        var gameRulesArr = Object.values(gameObjs.get());
+        $('div').empty();
+        $('div').append(
+            '<h1>LotteryWeb</h1>' +
+            '<ol class="breadcrumb">' +
+            '<li class="breadcrumb-item active">Home</li>' +
+            '</ol>' +
+            '<table class="table table-bordered table-sm table-hover" ' +
+            'id="estJackpotsTable">' +
+            '<caption>Estimated Jackpots</caption>' +
+            '<thead>' +
+            '<tr>' +
+            '<th>Game</th>' +
+            '<th>Next Draw Date</th>' +
+            '<th>Estimated Jackpot</th>' +
+            '</tr>' +
+            '</thead>' +
+            '<tfoot></tfoot>' +
+            '<tbody>' +
+            '<tr>' +
+            '</tr>' +
+            '</tbody>' +
+            '</table>' +
+            '<table class="table table-bordered table-sm table-hover" ' +
+            'id="recentResultsTable">' +
+            '<caption>Recent Results</caption>' +
+            '<thead>' +
+            '<tr>' +
+            '<th>Game</th>' +
+            '<th>Draw Date</th>' +
+            '<th>Winnings</th>' +
+            '</tr>' +
+            '</thead>' +
+            '<tfoot></tfoot>' +
+            '<tbody>' +
+            '<tr>' +
+            '</tr>' +
+            '</tbody>' +
+            '</table>'
+        );
+        gameRulesArr.forEach(displayEstJackpots);
+        gameRulesArr.forEach(displayRecentResults);
+    }
+
     /*************************** Main Function ********************************/
 
     /**
@@ -438,7 +497,6 @@
         drawsObjs.set(drawnNumsObj);
         gameRulesArr.forEach(displayEstJackpots);
         gameRulesArr.forEach(displayRecentResults);
-        //viewDrawings('Mega Millions');
     }
 
     function getDataAndLoadMain() {
