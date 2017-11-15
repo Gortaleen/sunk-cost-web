@@ -52,7 +52,7 @@ function getData() {
 
 function doGet() {
   'use strict';
-  var mode = HtmlService.SandboxMode.IFRAME;
   return HtmlService.createTemplateFromFile('Index').evaluate()
-  .setSandboxMode(mode);
+  .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
+  .setSandboxMode(HtmlService.SandboxMode.IFRAME);
 }

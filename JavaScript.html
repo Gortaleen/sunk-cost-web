@@ -204,6 +204,18 @@
         $('div').empty();
         $('div').append('<h1>LotteryWeb</h1>');
         $('div').append(
+            '<ol class="breadcrumb">' +
+            '<li class="breadcrumb-item">' +
+            '<a href="javascript:home()">Home</a>' +
+            '</li>' +
+            '<li class="breadcrumb-item">' +
+            '<a href="javascript:viewDrawings(\'' + gameName + '\')">' +
+            'Drawings</a>' +
+            '</li>' +
+            '<li class="breadcrumb-item active">Winnings</li>' +
+            '</ol>'
+        );        
+        $('div').append(
             '<table class="table table-condensed table-striped ' +
             'table-bordered"><caption></caption><thead></thead>' +
             '<tfoot></tfoot><tbody></tbody></table>');
