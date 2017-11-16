@@ -2,7 +2,7 @@
     /*jslint browser, devel, maxlen: 80, single, this, white*/
     /*global $, Game, google, window*/
 
-    /****************************** Utilities *********************************/
+    //****************************** Utilities *********************************
 
     /**
      * @param {string} dollarStr - A dollar value in string format.
@@ -45,17 +45,55 @@
             });
     }
 
-    // TODO: give this fxn a better name
-    /**
-     * Doug Crockfords "Module Pattern" for reducing problems related to the
-     * use of global variables.
-     */
+    //**************************** Module Patterns *****************************
+    //
+    // Doug Crockfords "Module Pattern" for reducing problems related to the
+    // use of global variables.
+    //
+    //**************************************************************************
+
+    //********************** Game Rules object from array **********************
+
     var gameObjs = (function () {
         "use strict";
         var objects = {};
 
+        /**
+         * Callback function
+         * Used by the reduce function to map match-strings to their respective 
+         * values.
+         * @param {object} obj - An accumulator.
+         * @param {object} curVal - A 1D array of match-strings and values.
+         * @return {object} An object of match-strings mapped to values.
+         */
+        function getMatchValuesObj(obj, curVal) {
+            var matchVal = curVal[1].toLocaleString('en-US', {
+                minimumIntegerDigits: 2
+            });
+            obj[matchVal] = curVal[2];
+            return obj;
+        }
+
+        /**
+         * @param {object} curVal - A 2D array of game rules names and values.
+         * @return {Object} An instance of the Game class.
+         */
+        function classifyGameRules(curVal) {
+            var id = curVal.data[0][1];
+            var name = curVal.data[1][1];
+            var ball = curVal.data[2][1];
+            var bonus = curVal.data[3][1];
+            var threshold = dollarStrToInt(curVal.data[4][1]);
+            var rules = curVal.data.slice(5).reduce(getMatchValuesObj, {});
+            var game = new Game(name, id, ball, bonus, rules, threshold);
+            return game;
+        }
+
         function set(input) {
-            objects = input;
+            objects = input.map(classifyGameRules).reduce(function (obj, game) {
+                obj[game.name] = game;
+                return obj;
+            }, {});
         }
 
         function get() {
@@ -66,34 +104,84 @@
             set: set
         };
     }());
+
+    //******************** Played Numbers object from array ********************
 
     var playsObjs = (function () {
         "use strict";
-        var objects = {};
+        var objectsArr = [];
 
+        /**
+         * Callback function for an array's--reduce--function.
+         * @param {object} arr - The accumulator.
+         * @param {object} data - Array of data for one set of played numbers.
+         * @return {object} - Object containing one set of played numbers.
+         */
+        function processPlayedNumArr(arr, data) {
+            arr.push({
+                numArr: data.slice(0, 5),
+                ball: data[5] || '',
+                bonus: data[6] || '',
+                startDate: data[7] || Date.now(),
+                endDate: data[8] || Date.now()
+            });
+            return arr;
+        }
+
+        function processPlayedNums(totalObj, curValObj) {
+            //            var headerArr = curValObj.data.slice(0, 1);
+            var numArr = curValObj.data.slice(1)
+                .reduce(processPlayedNumArr, []);
+            totalObj[curValObj.name] = numArr;
+            return totalObj;
+        }
+        
         function set(input) {
-            objects = input;
+            objectsArr = input.reduce(processPlayedNums, {});
         }
 
         function get() {
-            return objects;
+            return objectsArr;
         }
         return {
             get: get,
             set: set
         };
     }());
+
+    //********************* Drawn Numbers object from array ********************
 
     var drawsObjs = (function () {
         "use strict";
-        var objects = {};
+        var objectsArr = [];
+
+        function processDrawnNumArr(arr, data) {
+            var jackpot = dollarStrToInt(data[2]);
+            var estJackpot = dollarStrToInt(data[6]);
+            arr.push({
+                drawDate: data[0],
+                numArr: data[1].split('-'),
+                jackpot: jackpot,
+                ball: data[3] || '',
+                bonus: data[4] || '',
+                nextDrawDate: data[5] || '',
+                estJackpot: estJackpot
+            });
+            return arr;
+        }
+
+        function processDrawnNums(totalObj, curValObj) {
+            var numArr = curValObj.data.slice(1).reduce(processDrawnNumArr, []);
+            totalObj[curValObj.name] = numArr;
+            return totalObj;
+        }
 
         function set(input) {
-            objects = input;
+            objectsArr = input.reduce(processDrawnNums, {});
         }
 
         function get() {
-            return objects;
+            return objectsArr;
         }
         return {
             get: get,
@@ -101,95 +189,8 @@
         };
     }());
 
-    /******************** Played Numbers object from array ********************/
-
-    /**
-     * Callback function for an array's--reduce--function.
-     * @param {object} arr - The accumulator.
-     * @param {object} data - Array of data for one set of played numbers.
-     * @return {object} - Object containing one set of played numbers.
-     */
-    function processPlayedNumArr(arr, data) {
-        'use strict';
-        arr.push({
-            numArr: data.slice(0, 5),
-            ball: data[5] || '',
-            bonus: data[6] || '',
-            startDate: data[7] || Date.now(),
-            endDate: data[8] || Date.now()
-        });
-        return arr;
-    }
-
-    function processPlayedNums(totalObj, curValObj) {
-        'use strict';
-        // slice off header
-        var numArr = curValObj.data.slice(1).reduce(processPlayedNumArr, []);
-        totalObj[curValObj.name] = numArr;
-        return totalObj;
-    }
-
-    /********************* Drawn Numbers object from array ********************/
-
-    function processDrawnNumArr(arr, data) {
-        'use strict';
-        var jackpot = dollarStrToInt(data[2]);
-        var estJackpot = dollarStrToInt(data[6]);
-        arr.push({
-            drawDate: data[0],
-            numArr: data[1].split('-'),
-            jackpot: jackpot,
-            ball: data[3] || '',
-            bonus: data[4] || '',
-            nextDrawDate: data[5] || '',
-            estJackpot: estJackpot
-        });
-        return arr;
-    }
-
-    function processDrawnNums(totalObj, curValObj) {
-        'use strict';
-        var numArr = curValObj.data.slice(1).reduce(processDrawnNumArr, []);
-        totalObj[curValObj.name] = numArr;
-        return totalObj;
-    }
-
-    /********************** Game Rules object from array **********************/
-
-    /**
-     * Callback function
-     * Used by the reduce function to map match-strings to their respective 
-     * values.
-     * @param {object} obj - An accumulator.
-     * @param {object} curVal - A 1D array of match-strings and values.
-     * @return {object} An object of match-strings mapped to values.
-     */
-    function getMatchValuesObj(obj, curVal) {
-        'use strict';
-        var matchVal = curVal[1].toLocaleString('en-US', {
-            minimumIntegerDigits: 2
-        });
-        obj[matchVal] = curVal[2];
-        return obj;
-    }
-
-    /**
-     * @param {object} curVal - A 2D array of game rules names and values.
-     * @return {Object} An instance of the Game class.
-     */
-    function classifyGameRules(curVal) {
-        'use strict';
-        var id = curVal.data[0][1];
-        var name = curVal.data[1][1];
-        var ball = curVal.data[2][1];
-        var bonus = curVal.data[3][1];
-        var threshold = dollarStrToInt(curVal.data[4][1]);
-        var rules = curVal.data.slice(5).reduce(getMatchValuesObj, {});
-        var game = new Game(name, id, ball, bonus, rules, threshold);
-        return game;
-    }
-
-    /**************** Compare Drawn to Played Numbers Page ********************/
+    //**************************************************************************
+    //**************************** Winnings! Page ******************************
 
     /**
      * @param {string} gameName
@@ -199,7 +200,7 @@
         'use strict';
         var game = gameObjs.get()[gameName];
         var plays = playsObjs.get()[gameName];
-        var draws = drawsObjs.get()[gameName];
+        //var draws = drawsObjs.get()[gameName];
         var date = new Date(datePrimitive);
         $('div').empty();
         $('div').append('<h1>LotteryWeb</h1>');
@@ -214,14 +215,14 @@
             '</li>' +
             '<li class="breadcrumb-item active">Winnings</li>' +
             '</ol>'
-        );        
+        );
         $('div').append(
             '<table class="table table-condensed table-striped ' +
             'table-bordered">' +
             '<caption></caption>' +
             '<thead></thead>' +
-            '<tfoot></tfoot>' + 
-            '<tbody></tbody>' + 
+            '<tfoot></tfoot>' +
+            '<tbody></tbody>' +
             '</table>');
         $('caption').append(
             gameName.replace(/\s/g, '&nbsp;') + '&nbsp;' +
@@ -253,20 +254,20 @@
             '<td>$0</td>' +
             '</tr>'
         ));
-        plays.startDate;
-        plays.endDate;
-        plays.ball;
-        plays.bonus;
-        draws.numArr;
-        draws.drawDate;
-        draws.ball;
-        draws.bonus;
-        draws.jackpot;
+        //        plays.startDate;
+        //        plays.endDate;
+        //        plays.ball;
+        //        plays.bonus;
+        //        draws.numArr;
+        //        draws.drawDate;
+        //        draws.ball;
+        //        draws.bonus;
+        //        draws.jackpot;
         $('tfoot').append(
             '<tr><th colspan="6"></th><th>Total:</th><th>$0</th></tr>');
     }
 
-    /*************************** View Drawings Page ***************************/
+    //*************************** View Drawings Page ***************************
 
     /**
      * @param {string} gameName
@@ -300,7 +301,7 @@
         tempArr.reverse().slice(0, 20).forEach(function (curVal, index) {
             var date = new Date(curVal.drawDate);
             $('tbody').append(
-                '<tr title="Compare drawn numbers to played numbers" ' +
+                '<tr title="Check for winnings" ' +
                 'onClick="compareDrawnToPlayed(\'' + gameName + '\', ' +
                 date.valueOf() + ')"></tr>');
             $('tbody tr:eq(' + index + ')').append(
@@ -322,19 +323,19 @@
         });
     }
 
-    /********************** Display Estimated Jackpots ************************/
+    //********************** Display Estimated Jackpots ************************
 
-    function displayEstJackpots(game, index) {
+    function displayEstJackpots(gameRules, index) {
         'use strict';
-        var tempObj = drawsObjs.get()[game.name].slice(-1)[0];
+        var tempObj = drawsObjs.get()[gameRules.name].slice(-1)[0];
         var date = new Date(tempObj.nextDrawDate);
         if (index === 0) {
             $('table#estJackpotsTable tbody').empty();
         }
         $('table#estJackpotsTable tbody').append(
-            '<tr title="View ' + game.name + ' Drawings"' +
-            'onClick="viewDrawings(\'' + game.name + '\')">' +
-            '<td>' + game.name + '</td>' +
+            '<tr title="View ' + gameRules.name + ' Drawings"' +
+            'onClick="viewDrawings(\'' + gameRules.name + '\')">' +
+            '<td>' + gameRules.name + '</td>' +
             '<td>' + date.toLocaleDateString(
                 'en-US', {
                     month: '2-digit',
@@ -347,7 +348,7 @@
             '</tr>');
     }
 
-    /*********************** Display Recent Results ***************************/
+    //*********************** Display Recent Results ***************************
 
     /**
      * This is used as the criteria for an array's--some--function.
@@ -401,8 +402,8 @@
             $('table#recentResultsTable tbody').empty();
         }
         $('table#recentResultsTable tbody').append(
-            '<tr data-toggle="tooltip" title="View more ' + game.name +
-            ' Winnings" onClick="compareDrawnToPlayed(\'' + game.name + '\', ' +
+            '<tr data-toggle="tooltip" title="View details"' +
+            ' onClick="compareDrawnToPlayed(\'' + game.name + '\', ' +
             date.valueOf() + ')">' +
             '<td>' + game.name + '</td>' +
             '<td>' + date.toLocaleDateString(
@@ -420,8 +421,9 @@
     /**
      * @param {object} game is an instance of the Game class
      */
-    function displayRecentResults(game) {
+    function displayRecentResults(gameRules) {
         'use strict';
+        var game = gameObjs.get()[gameRules.name];
         drawsObjs.get()[game.name]
             .filter(resultThreshold, game)
             .filter(activeNumber, playsObjs.get()[game.name])
@@ -433,7 +435,7 @@
                 });
     }
 
-    /************************** View Home Screen ******************************/
+    //************************** View Home Screen ******************************
 
     /**
      *
@@ -484,7 +486,7 @@
         gameRulesArr.forEach(displayRecentResults);
     }
 
-    /*************************** Main Function ********************************/
+    //*************************** Main Function ********************************
 
     /**
      * main
@@ -495,24 +497,16 @@
     function main(rawDataJsonStr) {
         'use strict';
         var rawDataJsonObj = JSON.parse(rawDataJsonStr);
-        var gameRulesArr = rawDataJsonObj.gameRulesArr
-            .map(classifyGameRules);
-        var playedNumsObj = rawDataJsonObj.playedNumsArr
-            .reduce(processPlayedNums, {});
-        var drawnNumsObj = rawDataJsonObj.drawnNumsArr
-            .reduce(processDrawnNums, {});
-        var games = gameRulesArr.reduce(function (obj, game) {
-            obj[game.name] = game;
-            return obj;
-        }, {});
+
         /** @global */
-        gameObjs.set(games);
+        gameObjs.set(rawDataJsonObj.gameRulesArr);
         /** @global */
-        playsObjs.set(playedNumsObj);
+        playsObjs.set(rawDataJsonObj.playedNumsArr);
         /** @global */
-        drawsObjs.set(drawnNumsObj);
-        gameRulesArr.forEach(displayEstJackpots);
-        gameRulesArr.forEach(displayRecentResults);
+        drawsObjs.set(rawDataJsonObj.drawnNumsArr);
+
+        rawDataJsonObj.gameRulesArr.forEach(displayEstJackpots);
+        rawDataJsonObj.gameRulesArr.forEach(displayRecentResults);
     }
 
     function getDataAndLoadMain() {
@@ -523,10 +517,10 @@
         google.script.run.withSuccessHandler(main).getData();
     }
 
-    /***************************** jQuery functions ***************************/
+    //***************************** jQuery functions ***************************
 
     // jquery ready function
     $(getDataAndLoadMain);
 
-    /**************************************************************************/
+    //**************************************************************************
 </script>
