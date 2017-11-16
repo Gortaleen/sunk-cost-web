@@ -197,22 +197,28 @@
     //**************************************************************************
     //**************************** Winnings! Page ******************************
 
-    function formatAndCalcWins(curVal) {
+    function formatAndCalcWins(curVal, index) {
         'use strict';
-        //        plays.startDate;
-        //        plays.endDate;
-        //        draws.drawDate;
-        //        draws.jackpot;
         var game = this.game;
         var drawing = this.drawing;
+        var drawDate = new Date(drawing.drawDate);
+        var endDate = new Date(curVal.endDate);
+        var startDate = new Date(curVal.startDate);
         var matches = '';
         var match = 0;
         var total = 0;
-        $('tbody').append('<tr>');
+        var strike = false;
+        if (startDate > drawDate || drawDate > endDate) {
+            $('tbody').append('<tr class="text-muted" ' +
+                'title="Numbers not played">');
+            strike = true;
+        } else {
+            $('tbody').append('<tr>');
+        }
         matches = curVal.numArr.filter(
                 function (curVal) {
                     match = drawing.numArr.indexOf(curVal);
-                    $('tbody').append('<td' +
+                    $('tbody tr:eq(' + index + ')').append('<td' +
                         ((match >= 0) ? ' class="alert alert-success">' : '>') +
                         curVal.toString().padStart(2, '0') + '</td>');
                     return match >= 0;
@@ -222,13 +228,14 @@
         if (drawing.ball) {
             if (drawing.ball === curVal.ball) {
                 matches += '1';
-                $('tbody').append('<td class="alert alert-success">' +
-                    curVal.ball.toString().padStart(2, '0') + '</td>');
+                $('tbody tr:eq(' + index + ')')
+                    .append('<td class="alert alert-success">' +
+                        curVal.ball.toString().padStart(2, '0') + '</td>');
             } else {
                 matches += '0';
-                $('tbody').append('<td>' + 
-                curVal.ball.toString().padStart(2, '0') + 
-                '</td>');
+                $('tbody tr:eq(' + index + ')').append('<td>' +
+                    curVal.ball.toString().padStart(2, '0') +
+                    '</td>');
             }
         } else {
             matches = '0' + matches;
@@ -241,19 +248,27 @@
         }
         if (curVal.bonus && curVal.bonus === drawing.bonus) {
             total *= drawing.bonus;
-            $('tbody').append(
+            $('tbody tr:eq(' + index + ')').append(
                 '<td class="alert alert-success">' + curVal.bonus + '</td>');
         } else if (drawing.bonus) {
-            $('tbody').append('<td>' + drawing.bonus + '</td>');
+            $('tbody tr:eq(' + index + ')')
+                .append('<td>' + drawing.bonus + '</td>');
         }
         // calc win
-        if (total > 0) {
-            $('tbody').append('<td class="alert alert-success text-right">' +
-                integerToUSD(total) + '</td>');
+        if (total > 0 && strike) {
+            $('tbody tr:eq(' + index + ')')
+                .append('<td class="alert alert-success text-right">' +
+                    integerToUSD(total).strike() + '</td>');
+            total = 0;
+        } else if (total > 0) {
+            $('tbody tr:eq(' + index + ')')
+                .append('<td class="alert alert-success text-right">' +
+                    integerToUSD(total) + '</td>');
         } else {
-            $('tbody').append('<td class="text-right">' + integerToUSD(total) + '</td>');
+            $('tbody tr:eq(' + index + ')').append('<td class="text-right">' +
+                integerToUSD(total) + '</td>');
         }
-        $('tbody').append('</tr>');
+        $('tbody tr:eq(' + index + ')').append('</tr>');
         return total;
     }
 
@@ -284,8 +299,13 @@
             '</ol>'
         );
 
+        if (drawing.jackpot < game.threshold) {
+            $('div').append('<h6 class="text-danger">Drawing jackpot too low.' +
+                'Game not played.</h6>');
+        }
+
         $('div').append(
-            '<table class="table table-condensed table-striped ' +
+            '<table class="table table-condensed ' +
             'table-sm table-bordered text-center">' +
             '<caption></caption>' +
             '<thead></thead>' +
@@ -323,8 +343,8 @@
             .reduce((total, curVal) => total + curVal);
         $('tfoot').append(
             '<tr><th colspan="' + cols + '" class="text-right">Total:</th>' +
-            '<th class="text-right">' + 
-            integerToUSD(total) + 
+            '<th class="text-right">' +
+            integerToUSD(total) +
             '</th></tr>');
     }
 
@@ -359,9 +379,9 @@
             $('thead tr').append('<th>Num' + index + '</th>');
         });
         if (game.ball) {
-            $('thead tr').append('<th>' + 
-            game.ball.toString().toString().padStart(2, '0') + 
-            '</th>');
+            $('thead tr').append('<th>' +
+                game.ball.toString().toString().padStart(2, '0') +
+                '</th>');
         }
         if (game.bonus) {
             $('thead tr').append('<th>' + game.bonus + '</th>');
@@ -382,15 +402,15 @@
                     }) + '</td>');
             curVal.numArr.forEach(function (curVal) {
                 $('tbody tr:eq(' + index + ')')
-                    .append('<td>' + 
-                    curVal.toString().padStart(2, '0') + 
-                    '</td>');
+                    .append('<td>' +
+                        curVal.toString().padStart(2, '0') +
+                        '</td>');
             });
             if (game.ball) {
                 $('tbody tr:eq(' + index + ')')
-                    .append('<td>' + 
-                    curVal.ball.toString().padStart(2, '0') + 
-                    '</td>');
+                    .append('<td>' +
+                        curVal.ball.toString().padStart(2, '0') +
+                        '</td>');
             }
             if (game.bonus) {
                 $('tbody tr:eq(' + index + ')')
