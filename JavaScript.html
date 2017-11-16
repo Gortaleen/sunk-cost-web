@@ -129,9 +129,7 @@
         }
 
         function processPlayedNums(totalObj, curValObj) {
-            //            var headerArr = curValObj.data.slice(0, 1);
-            var numArr = curValObj.data.slice(1)
-                .reduce(processPlayedNumArr, []);
+            var numArr = curValObj.data.reduce(processPlayedNumArr, []);
             totalObj[curValObj.name] = numArr;
             return totalObj;
         }
@@ -183,14 +181,48 @@
         function get() {
             return objectsArr;
         }
+        
+        function getOneDrawing(name, date) {
+            var d = date.toISOString().slice(0, 10);
+            return objectsArr[name]
+                .filter((curVal) => curVal.drawDate.slice(0, 10) === d)[0];
+        }
         return {
             get: get,
+            getOneDrawing: getOneDrawing,
             set: set
         };
     }());
 
     //**************************************************************************
     //**************************** Winnings! Page ******************************
+    
+    function formatAndCalcWins(curVal) {
+        'use strict';
+        var drawing = this;
+        $('tbody').append(
+            '<tr>' +
+            '<td>' + drawing.numArr[0] + '</td>' +
+            '<td>' + curVal.numArr[1] + '</td>' +
+            '<td>' + curVal.numArr[2] + '</td>' +
+            '<td>' + curVal.numArr[3] + '</td>' +
+            '<td>' + curVal.numArr[4] + '</td>' +
+            '<td>' + curVal.ball + '</td>' +
+            '<td>' + curVal.bonus + '</td>' +
+            '<td>$0</td>' +
+            '</tr>'
+        );
+        //        plays.startDate;
+        //        plays.endDate;
+        //        plays.ball;
+        //        plays.bonus;
+        //        draws.numArr;
+        //        draws.drawDate;
+        //        draws.ball;
+        //        draws.bonus;
+        //        draws.jackpot;
+        return 0;
+    }
 
     /**
      * @param {string} gameName
@@ -200,8 +232,9 @@
         'use strict';
         var game = gameObjs.get()[gameName];
         var plays = playsObjs.get()[gameName];
-        //var draws = drawsObjs.get()[gameName];
+        var total = 0;
         var date = new Date(datePrimitive);
+        var drawing = drawsObjs.getOneDrawing(gameName, date);
         $('div').empty();
         $('div').append('<h1>LotteryWeb</h1>');
         $('div').append(
@@ -232,39 +265,25 @@
                 year: 'numeric'
             })
         );
-        // TODO: base header on game chacteristics.  I.e., don't display bonus
-        // ball header for games that don't use a bonus ball.
-        $('thead').append(
-            '<tr><th>Num1</th><th>Num2</th><th>Num3</th>' +
-            '<th>Num4</th><th>Num5</th><th>' + game.ball + '</th>' +
-            '<th>' + game.bonus.replace(' ', '&nbsp;') + '</th>' +
-            '<th>Winnings!</th>' +
-            '</tr>');
+        $('thead').append('<tr>');
+        plays[0].numArr
+            .forEach(
+                (curVal, index) => $('thead').append(
+                    '<th>Num' + (index + 1) + '</th>'));        if (game.ball) {
+            $('thead').append('<th>' + game.ball + '</th>');
+        }
+        if (game.bonus) {
+            $('thead').append('<th>' + game.bonus + '</th>');
+        }
+        $('thead').append('<th>Winnings!</th>');
+        $('thead').append('</tr>');
         // TODO: for one day list numbers played and check for matches with
         // the day's drawing.
-        plays.forEach((curVal) => $('tbody').append(
-            '<tr>' +
-            '<td>' + curVal.numArr[0] + '</td>' +
-            '<td>' + curVal.numArr[1] + '</td>' +
-            '<td>' + curVal.numArr[2] + '</td>' +
-            '<td>' + curVal.numArr[3] + '</td>' +
-            '<td>' + curVal.numArr[4] + '</td>' +
-            '<td>' + curVal.ball + '</td>' +
-            '<td>' + curVal.bonus + '</td>' +
-            '<td>$0</td>' +
-            '</tr>'
-        ));
-        //        plays.startDate;
-        //        plays.endDate;
-        //        plays.ball;
-        //        plays.bonus;
-        //        draws.numArr;
-        //        draws.drawDate;
-        //        draws.ball;
-        //        draws.bonus;
-        //        draws.jackpot;
+        total = plays.slice(1).map(formatAndCalcWins, drawing)
+            .reduce((total, curVal) => total + curVal);
         $('tfoot').append(
-            '<tr><th colspan="6"></th><th>Total:</th><th>$0</th></tr>');
+            '<tr><th colspan="6"></th><th>Total:</th>' +
+            '<th>' + total + '</th></tr>');
     }
 
     //*************************** View Drawings Page ***************************
