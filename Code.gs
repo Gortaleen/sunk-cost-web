@@ -1,6 +1,11 @@
 /*jslint browser, devel, maxlen: 80, single, white*/
 /*global HtmlService, Logger, PropertiesService, SpreadsheetApp*/
 
+function deleteCache() {
+  'use strict';
+  CacheService.getScriptCache().remove('lottery-json-string');
+}
+
 function include(filename) {
   'use strict';
   return HtmlService.createHtmlOutputFromFile(filename).getContent();
@@ -25,7 +30,7 @@ function getData() {
   var gameRulesSs = {};
   var lotteryJsonStr = '';
   var cache = CacheService.getScriptCache();
-  var cached = cache.get("lottery-json-string");
+  var cached = cache.get('lottery-json-string');
   if (cached != null) {
     return cached;
   }
@@ -45,7 +50,7 @@ function getData() {
       gameRulesArr: gameRulesSs.getSheets().map(getSheetData)
     }
   );
-  cache.put("lottery-json-string", lotteryJsonStr, 3600); // cache for one hour
+  cache.put('lottery-json-string', lotteryJsonStr, 3600); // cache for one hour
   return lotteryJsonStr;
 }
 

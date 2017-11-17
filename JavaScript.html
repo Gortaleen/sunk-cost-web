@@ -252,7 +252,7 @@
                 '<td class="alert alert-success">' + curVal.bonus + '</td>');
         } else if (drawing.bonus) {
             $('tbody tr:eq(' + index + ')')
-                .append('<td>' + drawing.bonus + '</td>');
+                .append('<td>' + curVal.bonus + '</td>');
         }
         // calc win
         if (total > 0 && strike) {
