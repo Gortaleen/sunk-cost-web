@@ -1,18 +1,18 @@
 /*jslint browser, devel, maxlen: 80, single, white*/
-/*global HtmlService, Logger, PropertiesService, SpreadsheetApp*/
+/*global CacheService, HtmlService, Logger, PropertiesService, SpreadsheetApp*/
 
 function deleteCache() {
-  'use strict';
-  CacheService.getScriptCache().remove('lottery-json-string');
+  "use strict";
+  CacheService.getScriptCache().remove("lottery-json-string");
 }
 
 function include(filename) {
-  'use strict';
+  "use strict";
   return HtmlService.createHtmlOutputFromFile(filename).getContent();
 }
 
 function getSheetData(sheet) {
-  'use strict';
+  "use strict";
   return {
     name: sheet.getName(),
     data: sheet.getDataRange().getValues()
@@ -24,14 +24,14 @@ function getSheetData(sheet) {
 * @return {string} stringified json of spreadsheet data.
 */
 function getData() {
-  'use strict';
+  "use strict";
   var playedNumsSs = {};
   var drawnNumsSs = {};
   var gameRulesSs = {};
-  var lotteryJsonStr = '';
+  var lotteryJsonStr = "";
   var cache = CacheService.getScriptCache();
-  var cached = cache.get('lottery-json-string');
-  if (cached != null) {
+  var cached = cache.get("lottery-json-string");
+  if (cached !== undefined) {
     return cached;
   }
   playedNumsSs = SpreadsheetApp.openById(
@@ -50,13 +50,13 @@ function getData() {
       gameRulesArr: gameRulesSs.getSheets().map(getSheetData)
     }
   );
-  cache.put('lottery-json-string', lotteryJsonStr, 3600); // cache for one hour
+  cache.put("lottery-json-string", lotteryJsonStr, 3600); // cache for one hour
   return lotteryJsonStr;
 }
 
 function doGet() {
-  'use strict';
-  return HtmlService.createTemplateFromFile('Index').evaluate()
+  "use strict";
+  return HtmlService.createTemplateFromFile("Index").evaluate()
   .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
   .setSandboxMode(HtmlService.SandboxMode.IFRAME);
 }

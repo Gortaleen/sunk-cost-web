@@ -1,5 +1,5 @@
 <script>
-    /*jslint browser, devel, maxlen: 80, single, this, white*/
+    /*jslint browser, maxlen: 80, this, white*/
     /*global $, Game, google, window*/
     //****************************** Utilities *********************************
     /**
@@ -7,19 +7,19 @@
      * @return {string} The dollar value as a number.
      */
     function dollarStrToInt(dollarStr) {
-        'use strict';
-        if (typeof dollarStr === 'number') {
+        "use strict";
+        if (typeof dollarStr === "number") {
             return dollarStr;
         }
         if (dollarStr.match(/^\$?\d+(,\d{3})*(\.\d+)?$/)) {
             return Number(
                 dollarStr.match(/\d+(,\d{3})*(\.\d+)?/)[0]
-                .replace(',', ''));
+                .replace(",", ""));
         }
         if (dollarStr.match(/^\$\d+(,\d{3})*(\.\d+)?\sMillion$/)) {
             return Number(
                 dollarStr.match(/\d+(,\d{3})*(\.\d+)?/)[0]
-                .replace(',', '')) * 1000000;
+                .replace(",", "")) * 1000000;
         }
         return undefined;
     }
@@ -29,17 +29,17 @@
      * @return {string} - Result formatted as USD.
      */
     function integerToUSD(num) {
-        'use strict';
+        "use strict";
         var dividend = num;
         var divisor = 1000000;
         var quotient = (dividend / divisor) + 0;
         if (quotient >= 1) {
-            return '$' + quotient + '&nbsp;Million';
+            return "$" + quotient + "&nbsp;Million";
         }
         return dividend.toLocaleString(
-            'en-US', {
-                style: 'currency',
-                currency: 'USD'
+            "en-US", {
+                style: "currency",
+                currency: "USD"
             });
     }
 
@@ -65,7 +65,7 @@
          * @return {object} An object of match-strings mapped to values.
          */
         function getMatchValuesObj(obj, curVal) {
-            var matchVal = curVal[1].toLocaleString('en-US', {
+            var matchVal = curVal[1].toLocaleString("en-US", {
                 minimumIntegerDigits: 2
             });
             obj[matchVal] = curVal[2];
@@ -120,8 +120,8 @@
                 data.slice(0, 5).map((curVal) => +curVal);
             arr.push({
                 numArr: numArr,
-                ball: data[5] || '',
-                bonus: data[6] || '',
+                ball: data[5] || "",
+                bonus: data[6] || "",
                 startDate: data[7] || Date.now(),
                 endDate: data[8] || Date.now()
             });
@@ -158,11 +158,11 @@
             var estJackpot = dollarStrToInt(data[6]);
             arr.push({
                 drawDate: data[0],
-                numArr: data[1].split('-').map((curVal) => +curVal),
+                numArr: data[1].split("-").map((curVal) => +curVal),
                 jackpot: jackpot,
-                ball: data[3] || '',
-                bonus: data[4] || '',
-                nextDrawDate: data[5] || '',
+                ball: data[3] || "",
+                bonus: data[4] || "",
+                nextDrawDate: data[5] || "",
                 estJackpot: estJackpot
             });
             return arr;
@@ -198,77 +198,82 @@
     //**************************** Winnings! Page ******************************
 
     function formatAndCalcWins(curVal, index) {
-        'use strict';
+        "use strict";
         var game = this.game;
         var drawing = this.drawing;
         var drawDate = new Date(drawing.drawDate);
         var endDate = new Date(curVal.endDate);
         var startDate = new Date(curVal.startDate);
-        var matches = '';
+        var matches = "";
         var match = 0;
         var total = 0;
         var strike = false;
         if (startDate > drawDate || drawDate > endDate) {
-            $('tbody').append('<tr class="text-muted" ' +
-                'title="Numbers not played">');
+            $("tbody").append("<tr class=\"text-muted\" " +
+                "title=\"Numbers not played\">");
             strike = true;
         } else {
-            $('tbody').append('<tr>');
+            $("tbody").append("<tr>");
         }
         matches = curVal.numArr.filter(
                 function (curVal) {
                     match = drawing.numArr.indexOf(curVal);
-                    $('tbody tr:eq(' + index + ')').append('<td' +
-                        ((match >= 0) ? ' class="alert alert-success">' : '>') +
-                        curVal.toString().padStart(2, '0') + '</td>');
+                    $("tbody tr:eq(" + index + ")")
+                        .append("<td" +
+                            ((match >= 0) ? " class=\"alert alert-success\">" :
+                                ">") +
+                            curVal.toString().padStart(2, "0") + "</td>");
                     return match >= 0;
                 })
             .length
             .toString();
         if (drawing.ball) {
             if (drawing.ball === curVal.ball) {
-                matches += '1';
-                $('tbody tr:eq(' + index + ')')
-                    .append('<td class="alert alert-success">' +
-                        curVal.ball.toString().padStart(2, '0') + '</td>');
+                matches += "1";
+                $("tbody tr:eq(" + index + ")")
+                    .append("<td class=\"alert alert-success\">" +
+                        curVal.ball.toString()
+                        .padStart(2, "0") + "</td>");
             } else {
-                matches += '0';
-                $('tbody tr:eq(' + index + ')').append('<td>' +
-                    curVal.ball.toString().padStart(2, '0') +
-                    '</td>');
+                matches += "0";
+                $("tbody tr:eq(" + index + ")").append("<td>" +
+                    curVal.ball.toString().padStart(2, "0") +
+                    "</td>");
             }
         } else {
-            matches = '0' + matches;
+            matches = "0" + matches;
         }
         total = game.gameRules[matches] || 0;
-        if (typeof total === 'string') {
-            if (total.toUpperCase() === 'JACKPOT') {
+        if (typeof total === "string") {
+            if (total.toUpperCase() === "JACKPOT") {
                 total = drawing.jackpot;
             }
         }
         if (curVal.bonus && curVal.bonus === drawing.bonus) {
             total *= drawing.bonus;
-            $('tbody tr:eq(' + index + ')').append(
-                '<td class="alert alert-success">' + curVal.bonus + '</td>');
+            $("tbody tr:eq(" + index + ")").append(
+                "<td class=\"alert alert-success\">" +
+                curVal.bonus + "</td>");
         } else if (drawing.bonus) {
-            $('tbody tr:eq(' + index + ')')
-                .append('<td>' + curVal.bonus + '</td>');
+            $("tbody tr:eq(" + index + ")")
+                .append("<td>" + curVal.bonus + "</td>");
         }
         // calc win
         if (total > 0 && strike) {
-            $('tbody tr:eq(' + index + ')')
-                .append('<td class="alert alert-success text-right">' +
-                    integerToUSD(total).strike() + '</td>');
+            $("tbody tr:eq(" + index + ")")
+                .append("<td class=\"alert alert-success text-right\">" +
+                    integerToUSD(total).strike() + "</td>");
             total = 0;
         } else if (total > 0) {
-            $('tbody tr:eq(' + index + ')')
-                .append('<td class="alert alert-success text-right">' +
-                    integerToUSD(total) + '</td>');
+            $("tbody tr:eq(" + index + ")")
+                .append("<td class=\"alert alert-success text-right\">" +
+                    integerToUSD(total) + "</td>");
         } else {
-            $('tbody tr:eq(' + index + ')').append('<td class="text-right">' +
-                integerToUSD(total) + '</td>');
+            $("tbody tr:eq(" + index + ")")
+                .append("<td class=\"text-right\">" +
+                    integerToUSD(total) + "</td>");
         }
-        $('tbody tr:eq(' + index + ')').append('</tr>');
+        $("tbody tr:eq(" + index + ")").append("</tr>");
         return total;
     }
 
@@ -277,75 +282,74 @@
      * @param {number} datePrimitive
      */
     function compareDrawnToPlayed(gameName, datePrimitive) {
-        'use strict';
+        "use strict";
         var game = gameObjs.get()[gameName];
         var plays = playsObjs.get()[gameName];
         var total = 0;
         var date = new Date(datePrimitive);
         var drawing = drawsObjs.getOneDrawing(gameName, date);
         var cols = 0;
-        $('div').empty();
-        $('div').append('<h1>LotteryWeb</h1>');
-        $('div').append(
-            '<ol class="breadcrumb">' +
-            '<li class="breadcrumb-item">' +
-            '<a href="javascript:home()">Home</a>' +
-            '</li>' +
-            '<li class="breadcrumb-item">' +
-            '<a href="javascript:viewDrawings(\'' + gameName + '\')">' +
-            'Drawings</a>' +
-            '</li>' +
-            '<li class="breadcrumb-item active">Winnings</li>' +
-            '</ol>'
+        $("div").empty();
+        $("div").append("<h1>LotteryWeb</h1>");
+        $("div").append(
+            "<ol class=\"breadcrumb\">" +
+            "<li class=\"breadcrumb-item\">" +
+            "<a href=\"javascript:home()\">Home</a>" +
+            "</li>" +
+            "<li class=\"breadcrumb-item\">" +
+            "<a href=\"javascript:viewDrawings('" + gameName + "')\">" +
+            "Drawings</a>" +
+            "</li>" +
+            "<li class=\"breadcrumb-item active\">Winnings</li>" +
+            "</ol>"
         );
 
         if (drawing.jackpot < game.threshold) {
-            $('div').append('<h6 class="text-danger">Drawing jackpot too low.' +
-                'Game not played.</h6>');
+            $("div").append("<h6 class=\"text-danger\">" +
+                "Drawing jackpot too low.&nbsp;Game not played.</h6>");
         }
 
-        $('div').append(
-            '<table class="table table-condensed ' +
-            'table-sm table-bordered text-center">' +
-            '<caption></caption>' +
-            '<thead></thead>' +
-            '<tfoot></tfoot>' +
-            '<tbody></tbody>' +
-            '</table>');
-        $('caption').append(
-            gameName.replace(/\s/g, '&nbsp;') + '&nbsp;' +
-            date.toLocaleDateString('en-US', {
-                month: '2-digit',
-                day: '2-digit',
-                year: 'numeric'
+        $("div").append(
+            "<table class=\"table table-condensed " +
+            "table-sm table-bordered text-center\">" +
+            "<caption></caption>" +
+            "<thead></thead>" +
+            "<tfoot></tfoot>" +
+            "<tbody></tbody>" +
+            "</table>");
+        $("caption").append(
+            gameName.replace(/\s/g, "&nbsp;") + "&nbsp;" +
+            date.toLocaleDateString("en-US", {
+                month: "2-digit",
+                day: "2-digit",
+                year: "numeric"
             })
         );
-        $('thead').append('<tr>');
+        $("thead").append("<tr>");
         plays[0].numArr
             .forEach(
-                (ignore, index) => $('thead').append(
-                    '<th>Num' + (index + 1) + '</th>'));
+                (ignore, index) => $("thead tr").append(
+                    "<th>Num" + (index + 1) + "</th>"));
         cols = plays[0].numArr.length;
         if (game.ball) {
             cols += 1;
-            $('thead').append('<th>' + game.ball + '</th>');
+            $("thead tr").append("<th>" + game.ball + "</th>");
         }
         if (game.bonus) {
             cols += 1;
-            $('thead').append('<th>' + game.bonus + '</th>');
+            $("thead tr").append("<th>" + game.bonus + "</th>");
         }
-        $('thead').append('<th class="text-right">Winnings!</th>');
-        $('thead').append('</tr>');
+        $("thead tr").append("<th class=\"text-right\">Winnings!</th>");
         total = plays.slice(1).map(formatAndCalcWins, {
                 game,
                 drawing
             })
             .reduce((total, curVal) => total + curVal);
-        $('tfoot').append(
-            '<tr><th colspan="' + cols + '" class="text-right">Total:</th>' +
-            '<th class="text-right">' +
+        $("tfoot").append(
+            "<tr><th colspan=\"" + cols + "\"></th>" +
+            "<th class=\"text-right\">Total:&nbsp;" +
             integerToUSD(total) +
-            '</th></tr>');
+            "</th></tr>");
     }
 
     //*************************** View Drawings Page ***************************
@@ -354,108 +358,108 @@
      * @param {string} gameName
      */
     function viewDrawings(gameName) {
-        'use strict';
+        "use strict";
         var tempArr = drawsObjs.get()[gameName]
             .slice(); // clone array to protect from reverse method
         var game = gameObjs.get()[gameName];
-        $('div').empty();
-        $('div').append('<h1>LotteryWeb</h1>');
-        $('div').append(
-            '<ol class="breadcrumb">' +
-            '<li class="breadcrumb-item"><a href="javascript:home()">' +
-            'Home</a></li>' +
-            '<li class="breadcrumb-item active">Drawings</li>' +
-            '</ol>'
+        $("div").empty();
+        $("div").append("<h1>LotteryWeb</h1>");
+        $("div").append(
+            "<ol class=\"breadcrumb\">" +
+            "<li class=\"breadcrumb-item\"><a href=\"javascript:home()\">" +
+            "Home</a></li>" +
+            "<li class=\"breadcrumb-item active\">Drawings</li>" +
+            "</ol>"
         );
-        $('div').append(
-            '<table class="table table-hover table-bordered ' +
-            'table-sm table-condensed"></table>');
-        $('table').append('<caption></caption>');
-        $('caption').html(gameName.replace(/\s/g, '&nbsp;'));
-        $('table').append('<thead class="text-center"><tr></tr></thead>');
-        $('table').append('<tbody class="text-center"></tbody>');
-        $('thead tr').append('<th class="text-left">Date</th>');
+        $("div").append(
+            "<table class=\"table table-hover table-bordered " +
+            "table-sm table-condensed\"></table>");
+        $("table").append("<caption></caption>");
+        $("caption").html(gameName.replace(/\s/g, "&nbsp;"));
+        $("table").append("<thead class=\"text-center\"><tr></tr></thead>");
+        $("table").append("<tbody class=\"text-center\"></tbody>");
+        $("thead tr").append("<th class=\"text-left\">Date</th>");
         playsObjs.get()[gameName][0].numArr.forEach(function (ignore, index) {
-            $('thead tr').append('<th>Num' + index + '</th>');
+            $("thead tr").append("<th>Num" + index + "</th>");
         });
         if (game.ball) {
-            $('thead tr').append('<th>' +
-                game.ball.toString().toString().padStart(2, '0') +
-                '</th>');
+            $("thead tr").append("<th>" +
+                game.ball.toString().toString().padStart(2, "0") +
+                "</th>");
         }
         if (game.bonus) {
-            $('thead tr').append('<th>' + game.bonus + '</th>');
+            $("thead tr").append("<th>" + game.bonus + "</th>");
         }
-        $('thead tr').append('<th class="text-right">Jackpot</th>');
+        $("thead tr").append("<th class=\"text-right\">Jackpot</th>");
         tempArr.reverse().slice(0, 20).forEach(function (curVal, index) {
             var date = new Date(curVal.drawDate);
-            $('tbody').append(
-                '<tr title="Check for winnings" ' +
-                'onClick="compareDrawnToPlayed(\'' + gameName + '\', ' +
-                date.valueOf() + ')"></tr>');
-            $('tbody tr:eq(' + index + ')').append(
-                '<td class="text-left">' + date.toLocaleDateString(
-                    'en-US', {
-                        month: '2-digit',
-                        day: '2-digit',
-                        year: 'numeric'
-                    }) + '</td>');
+            $("tbody").append(
+                "<tr title=\"Check for winnings\" " +
+                "onClick=\"compareDrawnToPlayed('" + gameName + "', " +
+                date.valueOf() + ")\"></tr>");
+            $("tbody tr:eq(" + index + ")").append(
+                "<td class=\"text-left\">" + date.toLocaleDateString(
+                    "en-US", {
+                        month: "2-digit",
+                        day: "2-digit",
+                        year: "numeric"
+                    }) + "</td>");
             curVal.numArr.forEach(function (curVal) {
-                $('tbody tr:eq(' + index + ')')
-                    .append('<td>' +
-                        curVal.toString().padStart(2, '0') +
-                        '</td>');
+                $("tbody tr:eq(" + index + ")")
+                    .append("<td>" +
+                        curVal.toString().padStart(2, "0") +
+                        "</td>");
             });
             if (game.ball) {
-                $('tbody tr:eq(' + index + ')')
-                    .append('<td>' +
-                        curVal.ball.toString().padStart(2, '0') +
-                        '</td>');
+                $("tbody tr:eq(" + index + ")")
+                    .append("<td>" +
+                        curVal.ball.toString().padStart(2, "0") +
+                        "</td>");
             }
             if (game.bonus) {
-                $('tbody tr:eq(' + index + ')')
-                    .append('<td>' + curVal.bonus + '</td>');
+                $("tbody tr:eq(" + index + ")")
+                    .append("<td>" + curVal.bonus + "</td>");
             }
-            $('tbody tr:eq(' + index + ')').append('<td class="text-right">' +
-                integerToUSD(curVal.jackpot) + '</td>');
+            $("tbody tr:eq(" + index + ")").append("<td class=\"text-right\">" +
+                integerToUSD(curVal.jackpot) + "</td>");
         });
     }
 
     //********************** Display Estimated Jackpots ************************
 
     function displayEstJackpots(gameRules, index) {
-        'use strict';
+        "use strict";
         var tempObj = drawsObjs.get()[gameRules.name].slice(-1)[0];
         var date = new Date(tempObj.nextDrawDate);
         if (index === 0) {
-            $('table#estJackpotsTable tbody').empty();
+            $("table#estJackpotsTable tbody").empty();
         }
-        $('table#estJackpotsTable tbody').append(
-            '<tr title="View ' + gameRules.name + ' Drawings"' +
-            'onClick="viewDrawings(\'' + gameRules.name + '\')">' +
-            '<td class="text-left">' + gameRules.name + '</td>' +
-            '<td class="text-center">' + date.toLocaleDateString(
-                'en-US', {
-                    month: '2-digit',
-                    day: '2-digit',
-                    year: 'numeric'
-                }) + '</td>' +
-            '<td class="text-right">' +
+        $("table#estJackpotsTable tbody").append(
+            "<tr title=\"View " + gameRules.name + " Drawings\"" +
+            "onClick=\"viewDrawings('" + gameRules.name + "')\">" +
+            "<td class=\"text-left\">" + gameRules.name + "</td>" +
+            "<td class=\"text-center\">" + date.toLocaleDateString(
+                "en-US", {
+                    month: "2-digit",
+                    day: "2-digit",
+                    year: "numeric"
+                }) + "</td>" +
+            "<td class=\"text-right\">" +
             integerToUSD(tempObj.estJackpot) +
-            '</td>' +
-            '</tr>');
+            "</td>" +
+            "</tr>");
     }
 
     //*********************** Display Recent Results ***************************
 
     /**
-     * This is used as the criteria for an array's--some--function.
+     * This is used as the criteria for an array"s--some--function.
      * @param {object} drawnNum is an object containing result data for one 
      * drawing.
      * @return {boolean}
      */
     function findActiveNum(playedNum) {
-        'use strict';
+        "use strict";
         var drawnNum = this;
         var drawDate = new Date(drawnNum.drawDate);
         var startDate = new Date(playedNum.startDate);
@@ -470,7 +474,7 @@
      * @return {boolean}
      */
     function activeNumber(drawnNum) {
-        'use strict';
+        "use strict";
         var playedNumsArr = this;
         return playedNumsArr.some(findActiveNum, drawnNum);
     }
@@ -482,7 +486,7 @@
      * @return {boolean}
      */
     function resultThreshold(drawnNum) {
-        'use strict';
+        "use strict";
         var game = this;
         return game.threshold <= drawnNum.jackpot;
     }
@@ -492,35 +496,35 @@
      * drawing.
      */
     function formatValidResults(result, index) {
-        'use strict';
+        "use strict";
         var game = this.game;
         var playedArr = this.playedNumsArr;
         var date = new Date(result.drawDate);
         if (index === 0) {
-            $('table#recentResultsTable tbody').empty();
+            $("table#recentResultsTable tbody").empty();
         }
-        $('table#recentResultsTable tbody').append(
-            '<tr data-toggle="tooltip" title="View details"' +
-            ' onClick="compareDrawnToPlayed(\'' + game.name + '\', ' +
-            date.valueOf() + ')">' +
-            '<td class="text-left">' + game.name + '</td>' +
-            '<td class="text-center">' + date.toLocaleDateString(
-                'en-US', {
-                    month: '2-digit',
-                    day: '2-digit',
-                    year: 'numeric'
-                }) + '</td>' +
-            '<td class="text-right">' +
+        $("table#recentResultsTable tbody").append(
+            "<tr data-toggle=\"tooltip\" title=\"View details\"" +
+            " onClick=\"compareDrawnToPlayed('" + game.name + "', " +
+            date.valueOf() + ")\">" +
+            "<td class=\"text-left\">" + game.name + "</td>" +
+            "<td class=\"text-center\">" + date.toLocaleDateString(
+                "en-US", {
+                    month: "2-digit",
+                    day: "2-digit",
+                    year: "numeric"
+                }) + "</td>" +
+            "<td class=\"text-right\">" +
             integerToUSD(game.calcResult(playedArr, result)) +
-            '</td>' +
-            '</tr>');
+            "</td>" +
+            "</tr>");
     }
 
     /**
      * @param {object} game is an instance of the Game class
      */
     function displayRecentResults(gameRules) {
-        'use strict';
+        "use strict";
         var game = gameObjs.get()[gameRules.name];
         drawsObjs.get()[game.name]
             .filter(resultThreshold, game)
@@ -539,46 +543,46 @@
      *
      */
     function home() {
-        'use strict';
+        "use strict";
         var gameRulesArr = Object.values(gameObjs.get());
-        $('div').empty();
-        $('div').append(
-            '<h1>LotteryWeb</h1>' +
-            '<ol class="breadcrumb">' +
-            '<li class="breadcrumb-item active">Home</li>' +
-            '</ol>' +
-            '<table class="table table-bordered table-condensed table-sm ' +
-            'table-hover" id="estJackpotsTable">' +
-            '<caption>Estimated Jackpots</caption>' +
-            '<thead>' +
-            '<tr>' +
-            '<th class="text-left">Game</th>' +
-            '<th class="text-center">Next Draw Date</th>' +
-            '<th class="text-right">Estimated Jackpot</th>' +
-            '</tr>' +
-            '</thead>' +
-            '<tfoot></tfoot>' +
-            '<tbody>' +
-            '<tr>' +
-            '</tr>' +
-            '</tbody>' +
-            '</table>' +
-            '<table class="table table-bordered table-condensed table-sm ' +
-            'table-hover" id="recentResultsTable">' +
-            '<caption>Recent Results</caption>' +
-            '<thead>' +
-            '<tr>' +
-            '<th class="text-left">Game</th>' +
-            '<th class="text-center">Draw Date</th>' +
-            '<th class="text-right">Winnings</th>' +
-            '</tr>' +
-            '</thead>' +
-            '<tfoot></tfoot>' +
-            '<tbody>' +
-            '<tr>' +
-            '</tr>' +
-            '</tbody>' +
-            '</table>'
+        $("div").empty();
+        $("div").append(
+            "<h1>LotteryWeb</h1>" +
+            "<ol class=\"breadcrumb\">" +
+            "<li class=\"breadcrumb-item active\">Home</li>" +
+            "</ol>" +
+            "<table class=\"table table-bordered table-condensed table-sm " +
+            "table-hover\" id=\"estJackpotsTable\">" +
+            "<caption>Estimated Jackpots</caption>" +
+            "<thead>" +
+            "<tr>" +
+            "<th class=\"text-left\">Game</th>" +
+            "<th class=\"text-center\">Next Draw Date</th>" +
+            "<th class=\"text-right\">Estimated Jackpot</th>" +
+            "</tr>" +
+            "</thead>" +
+            "<tfoot></tfoot>" +
+            "<tbody>" +
+            "<tr>" +
+            "</tr>" +
+            "</tbody>" +
+            "</table>" +
+            "<table class=\"table table-bordered table-condensed table-sm " +
+            "table-hover\" id=\"recentResultsTable\">" +
+            "<caption>Recent Results</caption>" +
+            "<thead>" +
+            "<tr>" +
+            "<th class=\"text-left\">Game</th>" +
+            "<th class=\"text-center\">Draw Date</th>" +
+            "<th class=\"text-right\">Winnings</th>" +
+            "</tr>" +
+            "</thead>" +
+            "<tfoot></tfoot>" +
+            "<tbody>" +
+            "<tr>" +
+            "</tr>" +
+            "</tbody>" +
+            "</table>"
         );
         gameRulesArr.forEach(displayEstJackpots);
         gameRulesArr.forEach(displayRecentResults);
@@ -593,7 +597,7 @@
      * arrays.
      */
     function main(rawDataJsonStr) {
-        'use strict';
+        "use strict";
         var rawDataJsonObj = JSON.parse(rawDataJsonStr);
 
         /** @global */
@@ -608,9 +612,9 @@
     }
 
     function getDataAndLoadMain() {
-        'use strict';
+        "use strict";
         // bootstrap requirement
-        $('[data-toggle="tooltip"]').tooltip();
+        $("[data-toggle=\"tooltip\"]").tooltip();
         // get data from spreadsheets then display
         google.script.run.withSuccessHandler(main).getData();
     }

@@ -9,7 +9,7 @@
      * @this {object}
      */
     function findMatches(playedObj) {
-        'use strict';
+        "use strict";
         var drawnObj = this.drawnObj;
         var gameRules = this.gameRules;
         var numMatches = playedObj.numArr
@@ -20,9 +20,9 @@
                 }, drawnObj.numArr)
             .filter((curVal) => curVal > 0)
             .length;
-        var ballMatches = (playedObj.ball === drawnObj.ball) ? '1' : '0';
+        var ballMatches = (playedObj.ball === drawnObj.ball) ? "1" : "0";
         var result = gameRules[numMatches.toString() + ballMatches] || 0;
-        if (result.toString().toLowerCase() === 'jackpot') {
+        if (result.toString().toLowerCase() === "jackpot") {
             return drawnObj.jackpot;
         }
         if (drawnObj.bonus === playedObj.bonus) {
@@ -40,7 +40,7 @@
      * @return {number} calculated winnings
      */
     function genericResult(gameRules, playedArr, drawnObj) {
-        'use strict';
+        "use strict";
         var result = playedArr.map(
                 findMatches, {
                     drawnObj: drawnObj,
@@ -55,10 +55,10 @@
      * @constructor
      */
     function Game(gameName, gameId, ball, bonus, gameRules, threshold) {
-        'use strict';
+        "use strict";
         this.name = gameName;
         this.id = gameId;
-        this.ball = ball
+        this.ball = ball;
         this.bonus = bonus;
         this.gameRules = gameRules;
         this.threshold = threshold;
@@ -68,11 +68,11 @@
      *
      */
     Game.prototype.calcResult = function (playedArr, drawnObj) {
-        'use strict';
+        "use strict";
         var gameFxns = {
-            'Mega Millions': genericResult,
-            'Powerball': genericResult,
-            'default': genericResult
+            "Mega Millions": genericResult,
+            "Powerball": genericResult,
+            "default": genericResult
         };
         var gameFxn = gameFxns[this.name] || gameFxns.default;
         return gameFxn(this.gameRules, playedArr, drawnObj);
