@@ -1,4 +1,4 @@
-/*jslint browser, devel, maxlen: 80, single, white*/
+/*jslint browser, devel, maxlen: 80, white*/
 /*global CacheService, HtmlService, Logger, PropertiesService, SpreadsheetApp*/
 
 function deleteCache() {
