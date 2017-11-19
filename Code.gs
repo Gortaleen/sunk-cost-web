@@ -1,4 +1,4 @@
-/*jslint browser, devel, maxlen: 80, white*/
+/*jslint browser, maxlen: 80, white*/
 /*global CacheService, HtmlService, Logger, PropertiesService, SpreadsheetApp*/
 
 function deleteCache() {
@@ -28,10 +28,11 @@ function getData() {
   var playedNumsSs = {};
   var drawnNumsSs = {};
   var gameRulesSs = {};
+  var kittySs = {};
   var lotteryJsonStr = "";
   var cache = CacheService.getScriptCache();
   var cached = cache.get("lottery-json-string");
-  if (cached !== undefined) {
+  if (cached !== undefined && cached !== null) {
     return cached;
   }
   playedNumsSs = SpreadsheetApp.openById(
@@ -43,11 +44,16 @@ function getData() {
   gameRulesSs = SpreadsheetApp.openById(
     PropertiesService.getScriptProperties().getProperties().gameRulesSsId
   );
+  kittySs = SpreadsheetApp.openById(
+    PropertiesService.getScriptProperties().getProperties().kittySsId
+  );
   lotteryJsonStr = JSON.stringify(
     {
       playedNumsArr: playedNumsSs.getSheets().map(getSheetData),
       drawnNumsArr: drawnNumsSs.getSheets().map(getSheetData),
-      gameRulesArr: gameRulesSs.getSheets().map(getSheetData)
+      gameRulesArr: gameRulesSs.getSheets().map(getSheetData),
+      kittyArr: kittySs.getSheetByName("Balance Sheet")
+      .getDataRange().getValues()
     }
   );
   cache.put("lottery-json-string", lotteryJsonStr, 3600); // cache for one hour

@@ -607,6 +607,8 @@
         /** @global */
         drawsObjs.set(rawDataJsonObj.drawnNumsArr);
 
+        $("div").append("<p>Kitty balance:&nbsp;$" + rawDataJsonObj.kittyArr[0][5] + "</p>");
+
         rawDataJsonObj.gameRulesArr.forEach(displayEstJackpots);
         rawDataJsonObj.gameRulesArr.forEach(displayRecentResults);
     }
