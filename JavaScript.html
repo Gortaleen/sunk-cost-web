@@ -1,4 +1,4 @@
-<script>
+<script type="application/ecmascript">
     /*jslint browser, maxlen: 80, this, white*/
     /*global $, Game, google, window*/
     //****************************** Utilities *********************************
@@ -116,20 +116,30 @@
          * @return {object} - Object containing one set of played numbers.
          */
         function processPlayedNumArr(arr, data, index) {
-            var numArr = (index === 0) ? data.slice(0, 5) :
-                data.slice(0, 5).map((curVal) => +curVal);
+            var numArr = (index === 0) ? data :
+                // force types to number
+                data.map((curVal) => +curVal);
             arr.push({
                 numArr: numArr,
-                ball: data[5] || "",
-                bonus: data[6] || "",
-                startDate: data[7] || Date.now(),
-                endDate: data[8] || Date.now()
+                ball: data[6] || "",
+                bonus: data[7] || "",
+                startDate: data[8] || Date.now(),
+                endDate: data[9] || Date.now()
             });
             return arr;
         }
 
         function processPlayedNums(totalObj, curValObj) {
-            var numArr = curValObj.data.reduce(processPlayedNumArr, []);
+            var numArr = [];
+            // count played nums
+            var numNums = curValObj.data[0]
+                .filter((curVal) => curVal === "played_num").length;
+            //
+            numArr = curValObj.data.map(
+                    function (curVal) {
+                        return curVal.slice(0, this);
+                    }, numNums)
+                .reduce(processPlayedNumArr, []);
             totalObj[curValObj.name] = numArr;
             return totalObj;
         }
@@ -488,6 +498,9 @@
     function resultThreshold(drawnNum) {
         "use strict";
         var game = this;
+        if (game.threshold === undefined) {
+            return true;
+        }
         return game.threshold <= drawnNum.jackpot;
     }
 
@@ -495,14 +508,11 @@
      * @param {object} result is an object containing result data for one 
      * drawing.
      */
-    function formatValidResults(result, index) {
+    function formatValidResults(result) {
         "use strict";
         var game = this.game;
-        var playedArr = this.playedNumsArr;
+        var playedArr = this.playedNumsArr.slice(-1);
         var date = new Date(result.drawDate);
-        if (index === 0) {
-            $("table#recentResultsTable tbody").empty();
-        }
         $("table#recentResultsTable tbody").append(
             "<tr data-toggle=\"tooltip\" title=\"View details\"" +
             " onClick=\"compareDrawnToPlayed('" + game.name + "', " +
@@ -523,17 +533,23 @@
     /**
      * @param {object} game is an instance of the Game class
      */
-    function displayRecentResults(gameRules) {
+    function displayRecentResults(gameRawObj) {
         "use strict";
-        var game = gameObjs.get()[gameRules.name];
-        drawsObjs.get()[game.name]
-            .filter(resultThreshold, game)
-            .filter(activeNumber, playsObjs.get()[game.name])
-            .slice(-1)
+        var name = gameRawObj.name;
+        var gameRules = gameObjs.get()[name];
+        var playsArr = playsObjs.get()[name]
+            .slice(1); // remove header
+        var drawsArr = drawsObjs.get()[name];
+        var byDateArr = drawsArr.filter(
+            activeNumber,
+            playsArr
+        );
+        var byThresholdArr = byDateArr.filter(resultThreshold, gameRules);
+        byThresholdArr.slice(-1) // display only last played per game
             .forEach(
                 formatValidResults, {
-                    game: game,
-                    playedNumsArr: playsObjs.get()[game.name]
+                    game: gameRules,
+                    playedNumsArr: playsArr
                 });
     }
 
@@ -607,9 +623,12 @@
         /** @global */
         drawsObjs.set(rawDataJsonObj.drawnNumsArr);
 
-        $("div").append("<p>Kitty balance:&nbsp;$" + rawDataJsonObj.kittyArr[0][5] + "</p>");
+        $("div").append("<p>Kitty balance:&nbsp;$" +
+            rawDataJsonObj.kittyArr[0][5] +
+            "</p>");
 
         rawDataJsonObj.gameRulesArr.forEach(displayEstJackpots);
+        $("table#recentResultsTable tbody").empty();
         rawDataJsonObj.gameRulesArr.forEach(displayRecentResults);
     }
 
