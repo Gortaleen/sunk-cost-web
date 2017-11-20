@@ -32,7 +32,7 @@ function getData() {
   var lotteryJsonStr = "";
   var cache = CacheService.getScriptCache();
   var cached = cache.get("lottery-json-string");
-  if (cached !== undefined && cached !== null) {
+  if (cached !== null) {
     return cached;
   }
   playedNumsSs = SpreadsheetApp.openById(
