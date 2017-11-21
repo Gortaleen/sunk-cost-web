@@ -1,7 +1,9 @@
 <script type="application/ecmascript">
     /*jslint browser, maxlen: 80, this, white*/
     /*global $, Game, google, window*/
+
     //****************************** Utilities *********************************
+
     /**
      * @param {string} dollarStr - A dollar value in string format.
      * @return {string} The dollar value as a number.
@@ -33,13 +35,15 @@
         var dividend = num;
         var divisor = 1000000;
         var quotient = (dividend / divisor) + 0;
-        if (quotient >= 1) {
+        if (quotient >= 40) {  // mm and pb minimum jp is $40MM
             return "$" + quotient + "&nbsp;Million";
         }
         return dividend.toLocaleString(
             "en-US", {
                 style: "currency",
-                currency: "USD"
+                currency: "USD",
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
             });
     }
 
@@ -138,7 +142,7 @@
             });
             return arr;
         }
-        
+
         function processPlayedNums(totalObj, curValObj) {
             var numArr = curValObj.data.reduce(processPlayedNumArr, []);
             totalObj[curValObj.name] = numArr;
@@ -205,6 +209,24 @@
         };
     }());
 
+    //********************* Drawn Numbers object from array ********************
+    
+    var kittyObj = (function () {
+        var balance = 0;
+
+        function get() {
+            return balance;
+        }
+
+        function set(data) {
+            balance = data;
+        }
+        return {
+            get: get,
+            set: set
+        };
+    }());
+    
     //**************************************************************************
     //**************************** Winnings! Page ******************************
 
@@ -619,13 +641,19 @@
         playsObjs.set(rawDataJsonObj.playedNumsArr);
         /** @global */
         drawsObjs.set(rawDataJsonObj.drawnNumsArr);
-
-        $("div").append("<p>Kitty balance:&nbsp;$" +
-            rawDataJsonObj.kittyArr[0][5] +
-            "</p>");
+        /** @global */
+        kittyObj.set(rawDataJsonObj.kittyArr[0][5]);
 
         rawDataJsonObj.gameRulesArr.forEach(displayEstJackpots);
-        $("table#recentResultsTable tbody").empty();  // clears the spinners
+    
+        $("table#recentResultsTable tbody").empty(); // clears the spinners
+    
+        // show kitty balance
+        $("table#estJackpotsTable tfoot").append(
+        "<tr><th colspan=\"2\" class=\"text-right\">Kitty Balance:</th>" +
+        "<th class=\"text-right\">" + integerToUSD(kittyObj.get()) + 
+        "</th></tr>");
+    
         rawDataJsonObj.gameRulesArr.forEach(displayRecentResults);
     }
 
