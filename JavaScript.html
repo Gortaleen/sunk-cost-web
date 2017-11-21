@@ -620,6 +620,13 @@
             "</table>"
         );
         gameRulesArr.forEach(displayEstJackpots);
+        
+        // show kitty balance
+        $("table#estJackpotsTable tfoot").append(
+        "<tr><th colspan=\"2\" class=\"text-right\">Kitty Balance:</th>" +
+        "<th class=\"text-right\">" + integerToUSD(kittyObj.get()) + 
+        "</th></tr>");
+        
         gameRulesArr.forEach(displayRecentResults);
     }
 
@@ -646,7 +653,7 @@
 
         rawDataJsonObj.gameRulesArr.forEach(displayEstJackpots);
     
-        $("table#recentResultsTable tbody").empty(); // clears the spinners
+        $("table#recentResultsTable tbody").empty(); // clear the spinners
     
         // show kitty balance
         $("table#estJackpotsTable tfoot").append(

@@ -18,10 +18,18 @@
                     var drawnArr = this;
                     return drawnArr.indexOf(num);
                 }, drawnObj.numArr)
-            .filter((curVal) => curVal > 0)
+            .filter((curVal) => curVal >= 0)
             .length;
-        var ballMatches = (playedObj.ball === drawnObj.ball) ? "1" : "0";
-        var result = gameRules[numMatches.toString() + ballMatches] || 0;
+        var ballMatches = 0;
+        var result = '';
+        if (playedObj.ball === "" ||
+            playedObj.ball === null ||
+            playedObj.ball === undefined) {
+            result = gameRules["0" + numMatches.toString()] || 0;
+        } else {
+            ballMatches = (playedObj.ball === drawnObj.ball) ? "1" : "0";
+            result = gameRules[numMatches.toString() + ballMatches] || 0;
+        }
         if (result.toString().toLowerCase() === "jackpot") {
             return drawnObj.jackpot;
         }
