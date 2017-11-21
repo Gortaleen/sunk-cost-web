@@ -116,9 +116,19 @@
          * @return {object} - Object containing one set of played numbers.
          */
         function processPlayedNumArr(arr, data, index) {
-            var numArr = (index === 0) ? data :
-                // force types to number
-                data.map((curVal) => +curVal);
+            var numArr = data.slice(0, 6); // allow up to six numbers played
+            if (index === 0) {
+                // remove unused header fields
+                numArr = numArr.filter((curVal) => curVal === "played_num");
+            } else {
+                // strip out empty strings, nulls, and undefs before
+                // type conversion to number
+                numArr = numArr.filter(
+                        (curVal) => curVal !== null &&
+                        curVal !== undefined &&
+                        curVal !== "")
+                    .map((curVal) => +curVal);
+            }
             arr.push({
                 numArr: numArr,
                 ball: data[6] || "",
@@ -128,18 +138,9 @@
             });
             return arr;
         }
-
+        
         function processPlayedNums(totalObj, curValObj) {
-            var numArr = [];
-            // count played nums
-            var numNums = curValObj.data[0]
-                .filter((curVal) => curVal === "played_num").length;
-            //
-            numArr = curValObj.data.map(
-                    function (curVal) {
-                        return curVal.slice(0, this);
-                    }, numNums)
-                .reduce(processPlayedNumArr, []);
+            var numArr = curValObj.data.reduce(processPlayedNumArr, []);
             totalObj[curValObj.name] = numArr;
             return totalObj;
         }
@@ -537,13 +538,9 @@
         "use strict";
         var name = gameRawObj.name;
         var gameRules = gameObjs.get()[name];
-        var playsArr = playsObjs.get()[name]
-            .slice(1); // remove header
+        var playsArr = playsObjs.get()[name].slice(1); // remove header
         var drawsArr = drawsObjs.get()[name];
-        var byDateArr = drawsArr.filter(
-            activeNumber,
-            playsArr
-        );
+        var byDateArr = drawsArr.filter(activeNumber, playsArr);
         var byThresholdArr = byDateArr.filter(resultThreshold, gameRules);
         byThresholdArr.slice(-1) // display only last played per game
             .forEach(
@@ -628,7 +625,7 @@
             "</p>");
 
         rawDataJsonObj.gameRulesArr.forEach(displayEstJackpots);
-        $("table#recentResultsTable tbody").empty();
+        $("table#recentResultsTable tbody").empty();  // clears the spinners
         rawDataJsonObj.gameRulesArr.forEach(displayRecentResults);
     }
 
