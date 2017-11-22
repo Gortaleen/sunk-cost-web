@@ -35,7 +35,7 @@
         var dividend = num;
         var divisor = 1000000;
         var quotient = (dividend / divisor) + 0;
-        if (quotient >= 40) {  // mm and pb minimum jp is $40MM
+        if (quotient >= 40) { // mm and pb minimum jp is $40MM
             return "$" + quotient + "&nbsp;Million";
         }
         return dividend.toLocaleString(
@@ -69,9 +69,7 @@
          * @return {object} An object of match-strings mapped to values.
          */
         function getMatchValuesObj(obj, curVal) {
-            var matchVal = curVal[1].toLocaleString("en-US", {
-                minimumIntegerDigits: 2
-            });
+            var matchVal = curVal[1];
             obj[matchVal] = curVal[2];
             return obj;
         }
@@ -120,21 +118,22 @@
          * @return {object} - Object containing one set of played numbers.
          */
         function processPlayedNumArr(arr, data, index) {
-            var numArr = data.slice(0, 6); // allow up to six numbers played
+            var numStrArr = data.slice(0, 6); // allow up to six numbers played.
             if (index === 0) {
                 // remove unused header fields
-                numArr = numArr.filter((curVal) => curVal === "played_num");
+                numStrArr = numStrArr.filter(
+                    (curVal) => curVal === "played_num");
             } else {
                 // strip out empty strings, nulls, and undefs before
-                // type conversion to number
-                numArr = numArr.filter(
+                // type conversion to string
+                numStrArr = numStrArr.filter(
                         (curVal) => curVal !== null &&
                         curVal !== undefined &&
                         curVal !== "")
-                    .map((curVal) => +curVal);
+                    .map((curVal) => curVal.toString().padStart(2, "0"));
             }
             arr.push({
-                numArr: numArr,
+                numStrArr: numStrArr,
                 ball: data[6] || "",
                 bonus: data[7] || "",
                 startDate: data[8] || Date.now(),
@@ -173,7 +172,7 @@
             var estJackpot = dollarStrToInt(data[6]);
             arr.push({
                 drawDate: data[0],
-                numArr: data[1].split("-").map((curVal) => +curVal),
+                numStrArr: data[1].split("-").map((curVal) => String(curVal)),
                 jackpot: jackpot,
                 ball: data[3] || "",
                 bonus: data[4] || "",
@@ -210,8 +209,9 @@
     }());
 
     //********************* Drawn Numbers object from array ********************
-    
+
     var kittyObj = (function () {
+        "use strict";
         var balance = 0;
 
         function get() {
@@ -226,7 +226,7 @@
             set: set
         };
     }());
-    
+
     //**************************************************************************
     //**************************** Winnings! Page ******************************
 
@@ -248,33 +248,31 @@
         } else {
             $("tbody").append("<tr>");
         }
-        matches = curVal.numArr.filter(
+        matches = curVal.numStrArr.filter(
                 function (curVal) {
-                    match = drawing.numArr.indexOf(curVal);
+                    match = drawing.numStrArr.indexOf(curVal);
                     $("tbody tr:eq(" + index + ")")
                         .append("<td" +
                             ((match >= 0) ? " class=\"alert alert-success\">" :
                                 ">") +
-                            curVal.toString().padStart(2, "0") + "</td>");
+                            curVal + "</td>");
                     return match >= 0;
                 })
             .length
             .toString();
-        if (drawing.ball) {
+        if (drawing.ball !== "" && 
+            drawing.ball !== null && 
+            drawing.ball !== undefined) {
             if (drawing.ball === curVal.ball) {
                 matches += "1";
                 $("tbody tr:eq(" + index + ")")
                     .append("<td class=\"alert alert-success\">" +
-                        curVal.ball.toString()
-                        .padStart(2, "0") + "</td>");
+                        curVal.ball + "</td>");
             } else {
                 matches += "0";
                 $("tbody tr:eq(" + index + ")").append("<td>" +
-                    curVal.ball.toString().padStart(2, "0") +
-                    "</td>");
+                    curVal.ball + "</td>");
             }
-        } else {
-            matches = "0" + matches;
         }
         total = game.gameRules[matches] || 0;
         if (typeof total === "string") {
@@ -359,11 +357,11 @@
             })
         );
         $("thead").append("<tr>");
-        plays[0].numArr
+        plays[0].numStrArr
             .forEach(
                 (ignore, index) => $("thead tr").append(
                     "<th>Num" + (index + 1) + "</th>"));
-        cols = plays[0].numArr.length;
+        cols = plays[0].numStrArr.length;
         if (game.ball) {
             cols += 1;
             $("thead tr").append("<th>" + game.ball + "</th>");
@@ -412,9 +410,11 @@
         $("table").append("<thead class=\"text-center\"><tr></tr></thead>");
         $("table").append("<tbody class=\"text-center\"></tbody>");
         $("thead tr").append("<th class=\"text-left\">Date</th>");
-        playsObjs.get()[gameName][0].numArr.forEach(function (ignore, index) {
-            $("thead tr").append("<th>Num" + index + "</th>");
-        });
+        playsObjs.get()[gameName][0]
+            .numStrArr
+            .forEach(function (ignore, index) {
+                $("thead tr").append("<th>Num" + index + "</th>");
+            });
         if (game.ball) {
             $("thead tr").append("<th>" +
                 game.ball.toString().toString().padStart(2, "0") +
@@ -437,7 +437,7 @@
                         day: "2-digit",
                         year: "numeric"
                     }) + "</td>");
-            curVal.numArr.forEach(function (curVal) {
+            curVal.numStrArr.forEach(function (curVal) {
                 $("tbody tr:eq(" + index + ")")
                     .append("<td>" +
                         curVal.toString().padStart(2, "0") +
@@ -534,6 +534,7 @@
     function formatValidResults(result) {
         "use strict";
         var game = this.game;
+        // display on last active play
         var playedArr = this.playedNumsArr.slice(-1);
         var date = new Date(result.drawDate);
         $("table#recentResultsTable tbody").append(
@@ -620,13 +621,13 @@
             "</table>"
         );
         gameRulesArr.forEach(displayEstJackpots);
-        
+
         // show kitty balance
         $("table#estJackpotsTable tfoot").append(
-        "<tr><th colspan=\"2\" class=\"text-right\">Kitty Balance:</th>" +
-        "<th class=\"text-right\">" + integerToUSD(kittyObj.get()) + 
-        "</th></tr>");
-        
+            "<tr><th colspan=\"2\" class=\"text-right\">Kitty Balance:</th>" +
+            "<th class=\"text-right\">" + integerToUSD(kittyObj.get()) +
+            "</th></tr>");
+
         gameRulesArr.forEach(displayRecentResults);
     }
 
@@ -652,15 +653,15 @@
         kittyObj.set(rawDataJsonObj.kittyArr[0][5]);
 
         rawDataJsonObj.gameRulesArr.forEach(displayEstJackpots);
-    
+
         $("table#recentResultsTable tbody").empty(); // clear the spinners
-    
+
         // show kitty balance
         $("table#estJackpotsTable tfoot").append(
-        "<tr><th colspan=\"2\" class=\"text-right\">Kitty Balance:</th>" +
-        "<th class=\"text-right\">" + integerToUSD(kittyObj.get()) + 
-        "</th></tr>");
-    
+            "<tr><th colspan=\"2\" class=\"text-right\">Kitty Balance:</th>" +
+            "<th class=\"text-right\">" + integerToUSD(kittyObj.get()) +
+            "</th></tr>");
+
         rawDataJsonObj.gameRulesArr.forEach(displayRecentResults);
     }
 

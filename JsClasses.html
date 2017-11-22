@@ -1,5 +1,5 @@
 <script>
-    /*jslint browser, devel, maxlen: 80, single, this, white*/
+    /*jslint browser, maxlen: 80, this, white*/
     /*global $, google*/
 
     //********************* Game Class Definition ******************************
@@ -12,23 +12,24 @@
         "use strict";
         var drawnObj = this.drawnObj;
         var gameRules = this.gameRules;
-        var numMatches = playedObj.numArr
-            .map(
-                function (num) {
-                    var drawnArr = this;
-                    return drawnArr.indexOf(num);
-                }, drawnObj.numArr)
+        // find no. of num matches between drawn and played
+        var numStrMatches = playedObj.numStrArr
+            .map(function (numStr) {
+                var drawnArr = this;
+                return drawnArr.indexOf(numStr);
+            }, drawnObj.numStrArr)
             .filter((curVal) => curVal >= 0)
             .length;
         var ballMatches = 0;
-        var result = '';
+        var result = "";
+        debugger;
         if (playedObj.ball === "" ||
             playedObj.ball === null ||
             playedObj.ball === undefined) {
-            result = gameRules["0" + numMatches.toString()] || 0;
+            result = gameRules[numStrMatches.toString()] || 0;
         } else {
             ballMatches = (playedObj.ball === drawnObj.ball) ? "1" : "0";
-            result = gameRules[numMatches.toString() + ballMatches] || 0;
+            result = gameRules[numStrMatches.toString() + ballMatches] || 0;
         }
         if (result.toString().toLowerCase() === "jackpot") {
             return drawnObj.jackpot;
