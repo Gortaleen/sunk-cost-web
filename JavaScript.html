@@ -32,9 +32,9 @@
      */
     function integerToUSD(num) {
         "use strict";
-        var dividend = num;
-        var divisor = 1000000;
-        var quotient = (dividend / divisor) + 0;
+        let dividend = num;
+        let divisor = 1000000;
+        let quotient = (dividend / divisor) + 0;
         if (quotient >= 40) { // mm and pb minimum jp is $40MM
             return "$" + quotient + "&nbsp;Million";
         }
@@ -56,9 +56,9 @@
 
     //********************** Game Rules object from array **********************
 
-    var gameObjs = (function () {
+    let gameObjs = (function () {
         "use strict";
-        var objects = {};
+        let objects = {};
 
         /**
          * Callback function
@@ -69,7 +69,7 @@
          * @return {object} An object of match-strings mapped to values.
          */
         function getMatchValuesObj(obj, curVal) {
-            var matchVal = curVal[1];
+            let matchVal = curVal[1];
             obj[matchVal] = curVal[2];
             return obj;
         }
@@ -79,13 +79,13 @@
          * @return {Object} An instance of the Game class.
          */
         function classifyGameRules(curVal) {
-            var id = curVal.data[0][1];
-            var name = curVal.data[1][1];
-            var ball = curVal.data[2][1];
-            var bonus = curVal.data[3][1];
-            var threshold = dollarStrToInt(curVal.data[4][1]);
-            var rules = curVal.data.slice(5).reduce(getMatchValuesObj, {});
-            var game = new Game(name, id, ball, bonus, rules, threshold);
+            let id = curVal.data[0][1];
+            let name = curVal.data[1][1];
+            let ball = curVal.data[2][1];
+            let bonus = curVal.data[3][1];
+            let threshold = dollarStrToInt(curVal.data[4][1]);
+            let rules = curVal.data.slice(5).reduce(getMatchValuesObj, {});
+            let game = new Game(name, id, ball, bonus, rules, threshold);
             return game;
         }
 
@@ -107,9 +107,9 @@
 
     //******************** Played Numbers object from array ********************
 
-    var playsObjs = (function () {
+    let playsObjs = (function () {
         "use strict";
-        var objectsArr = [];
+        let objectsArr = [];
 
         /**
          * Callback function for an array's--reduce--function.
@@ -118,7 +118,7 @@
          * @return {object} - Object containing one set of played numbers.
          */
         function processPlayedNumArr(arr, data, index) {
-            var numStrArr = data.slice(0, 6); // allow up to six numbers played.
+            let numStrArr = data.slice(0, 6); // allow up to six numbers played.
             if (index === 0) {
                 // remove unused header fields
                 numStrArr = numStrArr.filter(
@@ -143,7 +143,7 @@
         }
 
         function processPlayedNums(totalObj, curValObj) {
-            var numArr = curValObj.data.reduce(processPlayedNumArr, []);
+            let numArr = curValObj.data.reduce(processPlayedNumArr, []);
             totalObj[curValObj.name] = numArr;
             return totalObj;
         }
@@ -163,13 +163,13 @@
 
     //********************* Drawn Numbers object from array ********************
 
-    var drawsObjs = (function () {
+    let drawsObjs = (function () {
         "use strict";
-        var objectsArr = [];
+        let objectsArr = [];
 
         function processDrawnNumArr(arr, data) {
-            var jackpot = dollarStrToInt(data[2]);
-            var estJackpot = dollarStrToInt(data[6]);
+            let jackpot = dollarStrToInt(data[2]);
+            let estJackpot = dollarStrToInt(data[6]);
             arr.push({
                 drawDate: data[0],
                 numStrArr: data[1].split("-").map((curVal) => String(curVal)),
@@ -183,7 +183,7 @@
         }
 
         function processDrawnNums(totalObj, curValObj) {
-            var numArr = curValObj.data.slice(1).reduce(processDrawnNumArr, []);
+            let numArr = curValObj.data.slice(1).reduce(processDrawnNumArr, []);
             totalObj[curValObj.name] = numArr;
             return totalObj;
         }
@@ -197,7 +197,7 @@
         }
 
         function getOneDrawing(name, date) {
-            var d = date.toISOString().slice(0, 10);
+            let d = date.toISOString().slice(0, 10);
             return objectsArr[name]
                 .filter((curVal) => curVal.drawDate.slice(0, 10) === d)[0];
         }
@@ -210,9 +210,9 @@
 
     //********************* Drawn Numbers object from array ********************
 
-    var kittyObj = (function () {
+    let kittyObj = (function () {
         "use strict";
-        var balance = 0;
+        let balance = 0;
 
         function get() {
             return balance;
@@ -227,20 +227,19 @@
         };
     }());
 
-    //**************************************************************************
     //**************************** Winnings! Page ******************************
 
     function formatAndCalcWins(curVal, index) {
         "use strict";
-        var game = this.game;
-        var drawing = this.drawing;
-        var drawDate = new Date(drawing.drawDate);
-        var endDate = new Date(curVal.endDate);
-        var startDate = new Date(curVal.startDate);
-        var matches = "";
-        var match = 0;
-        var total = 0;
-        var strike = false;
+        let game = this.game;
+        let drawing = this.drawing;
+        let drawDate = new Date(drawing.drawDate);
+        let endDate = new Date(curVal.endDate);
+        let startDate = new Date(curVal.startDate);
+        let matches = "";
+        let match = 0;
+        let total = 0;
+        let strike = false;
         if (startDate > drawDate || drawDate > endDate) {
             $("tbody").append("<tr class=\"text-muted\" " +
                 "title=\"Numbers not played\">");
@@ -314,12 +313,12 @@
      */
     function compareDrawnToPlayed(gameName, datePrimitive) {
         "use strict";
-        var game = gameObjs.get()[gameName];
-        var plays = playsObjs.get()[gameName];
-        var total = 0;
-        var date = new Date(datePrimitive);
-        var drawing = drawsObjs.getOneDrawing(gameName, date);
-        var cols = 0;
+        let game = gameObjs.get()[gameName];
+        let plays = playsObjs.get()[gameName];
+        let total = 0;
+        let date = new Date(datePrimitive);
+        let drawing = drawsObjs.getOneDrawing(gameName, date);
+        let cols = 0;
         $("div").empty();
         $("div").append("<h1>LotteryWeb</h1>");
         $("div").append(
@@ -390,9 +389,9 @@
      */
     function viewDrawings(gameName) {
         "use strict";
-        var tempArr = drawsObjs.get()[gameName]
+        let tempArr = drawsObjs.get()[gameName]
             .slice(); // clone array to protect from reverse method
-        var game = gameObjs.get()[gameName];
+        let game = gameObjs.get()[gameName];
         $("div").empty();
         $("div").append("<h1>LotteryWeb</h1>");
         $("div").append(
@@ -425,7 +424,7 @@
         }
         $("thead tr").append("<th class=\"text-right\">Jackpot</th>");
         tempArr.reverse().slice(0, 20).forEach(function (curVal, index) {
-            var date = new Date(curVal.drawDate);
+            let date = new Date(curVal.drawDate);
             $("tbody").append(
                 "<tr title=\"Check for winnings\" " +
                 "onClick=\"compareDrawnToPlayed('" + gameName + "', " +
@@ -462,8 +461,8 @@
 
     function displayEstJackpots(gameRules, index) {
         "use strict";
-        var drawingObj = drawsObjs.get()[gameRules.name].slice(-1)[0];
-        var date = new Date(drawingObj.nextDrawDate);
+        let drawingObj = drawsObjs.get()[gameRules.name].slice(-1)[0];
+        let date = new Date(drawingObj.nextDrawDate);
         if (index === 0) {
             $("table#estJackpotsTable tbody").empty();
         }
@@ -493,10 +492,10 @@
      */
     function findActiveNum(playedNum) {
         "use strict";
-        var drawnNum = this;
-        var drawDate = new Date(drawnNum.drawDate);
-        var startDate = new Date(playedNum.startDate);
-        var endDate = new Date(playedNum.endDate);
+        let drawnNum = this;
+        let drawDate = new Date(drawnNum.drawDate);
+        let startDate = new Date(playedNum.startDate);
+        let endDate = new Date(playedNum.endDate);
         return startDate <= drawDate && drawDate <= endDate;
     }
 
@@ -508,7 +507,7 @@
      */
     function activeNumber(drawnNum) {
         "use strict";
-        var playedNumsArr = this;
+        let playedNumsArr = this;
         return playedNumsArr.some(findActiveNum, drawnNum);
     }
 
@@ -520,7 +519,7 @@
      */
     function resultThreshold(drawnNum) {
         "use strict";
-        var game = this;
+        let game = this;
         if (game.threshold === undefined) {
             return true;
         }
@@ -533,12 +532,12 @@
      */
     function formatValidResults(result) {
         "use strict";
-        var game = this.game;
+        let game = this.game;
         // display only last active play
-        var playedArr = this.playedNumsArr
+        let playedArr = this.playedNumsArr
             .filter(findActiveNum, result)
             .slice(-1);
-        var date = new Date(result.drawDate);
+        let date = new Date(result.drawDate);
         $("table#recentResultsTable tbody").append(
             "<tr data-toggle=\"tooltip\" title=\"View details\"" +
             " onClick=\"compareDrawnToPlayed('" + game.name + "', " +
@@ -561,14 +560,14 @@
      */
     function displayRecentResults(gameRawObj) {
         "use strict";
-        var name = gameRawObj.name;
-        var gameRules = gameObjs.get()[name];
-        var playsArr = playsObjs.get()[name].slice(1); // remove header
-        var drawsArr = drawsObjs.get()[name];
+        let name = gameRawObj.name;
+        let gameRules = gameObjs.get()[name];
+        let playsArr = playsObjs.get()[name].slice(1); // remove header
+        let drawsArr = drawsObjs.get()[name];
         // this returns draws that have at least one active play
-        var drawsByDateArr = drawsArr.filter(activeNumber, playsArr);
+        let drawsByDateArr = drawsArr.filter(activeNumber, playsArr);
         // this returns draws that are over the minimum play threshold
-        var drawsByThresholdArr = drawsByDateArr.filter(
+        let drawsByThresholdArr = drawsByDateArr.filter(
             resultThreshold, gameRules);
         drawsByThresholdArr.slice(-1)
             .forEach(
@@ -585,7 +584,7 @@
      */
     function home() {
         "use strict";
-        var gameRulesArr = Object.values(gameObjs.get());
+        let gameRulesArr = Object.values(gameObjs.get());
         $("div").empty();
         $("div").append(
             "<h1>LotteryWeb</h1>" +
@@ -646,7 +645,7 @@
      */
     function main(rawDataJsonStr) {
         "use strict";
-        var rawDataJsonObj = JSON.parse(rawDataJsonStr);
+        let rawDataJsonObj = JSON.parse(rawDataJsonStr);
 
         /** @global */
         gameObjs.set(rawDataJsonObj.gameRulesArr);

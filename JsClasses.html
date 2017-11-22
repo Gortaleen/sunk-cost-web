@@ -10,18 +10,18 @@
      */
     function findMatches(playedObj) {
         "use strict";
-        var drawnObj = this.drawnObj;
-        var gameRules = this.gameRules;
+        let drawnObj = this.drawnObj;
+        let gameRules = this.gameRules;
         // find no. of num matches between drawn and played
-        var numStrMatches = playedObj.numStrArr
+        let numStrMatches = playedObj.numStrArr
             .map(function (numStr) {
-                var drawnArr = this;
+                let drawnArr = this;
                 return drawnArr.indexOf(numStr);
             }, drawnObj.numStrArr)
             .filter((curVal) => curVal >= 0)
             .length;
-        var ballMatches = 0;
-        var result = "";
+        let ballMatches = 0;
+        let result = "";
         if (playedObj.ball === "" ||
             playedObj.ball === null ||
             playedObj.ball === undefined) {
@@ -49,7 +49,7 @@
      */
     function genericResult(gameRules, playedArr, drawnObj) {
         "use strict";
-        var result = playedArr.map(
+        let result = playedArr.map(
                 findMatches, {
                     drawnObj: drawnObj,
                     gameRules: gameRules
@@ -77,12 +77,12 @@
      */
     Game.prototype.calcResult = function (playedArr, drawnObj) {
         "use strict";
-        var gameFxns = {
+        let gameFxns = {
             "Mega Millions": genericResult,
             "Powerball": genericResult,
             "default": genericResult
         };
-        var gameFxn = gameFxns[this.name] || gameFxns.default;
+        let gameFxn = gameFxns[this.name] || gameFxns.default;
         return gameFxn(this.gameRules, playedArr, drawnObj);
     };
 </script>
