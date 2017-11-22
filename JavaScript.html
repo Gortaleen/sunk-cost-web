@@ -260,8 +260,8 @@
                 })
             .length
             .toString();
-        if (drawing.ball !== "" && 
-            drawing.ball !== null && 
+        if (drawing.ball !== "" &&
+            drawing.ball !== null &&
             drawing.ball !== undefined) {
             if (drawing.ball === curVal.ball) {
                 matches += "1";
@@ -462,8 +462,8 @@
 
     function displayEstJackpots(gameRules, index) {
         "use strict";
-        var tempObj = drawsObjs.get()[gameRules.name].slice(-1)[0];
-        var date = new Date(tempObj.nextDrawDate);
+        var drawingObj = drawsObjs.get()[gameRules.name].slice(-1)[0];
+        var date = new Date(drawingObj.nextDrawDate);
         if (index === 0) {
             $("table#estJackpotsTable tbody").empty();
         }
@@ -478,7 +478,7 @@
                     year: "numeric"
                 }) + "</td>" +
             "<td class=\"text-right\">" +
-            integerToUSD(tempObj.estJackpot) +
+            integerToUSD(drawingObj.estJackpot) +
             "</td>" +
             "</tr>");
     }
@@ -501,7 +501,7 @@
     }
 
     /**
-     * This is used as the criteria for an array filter.
+     * Returns "true" for drawings with at least one active play.
      * @param {object} drawnNum is an object containing result data for one 
      * drawing.
      * @return {boolean}
@@ -534,7 +534,7 @@
     function formatValidResults(result) {
         "use strict";
         var game = this.game;
-        // display on last active play
+        // display only last active play
         var playedArr = this.playedNumsArr.slice(-1);
         var date = new Date(result.drawDate);
         $("table#recentResultsTable tbody").append(
@@ -563,9 +563,14 @@
         var gameRules = gameObjs.get()[name];
         var playsArr = playsObjs.get()[name].slice(1); // remove header
         var drawsArr = drawsObjs.get()[name];
-        var byDateArr = drawsArr.filter(activeNumber, playsArr);
-        var byThresholdArr = byDateArr.filter(resultThreshold, gameRules);
-        byThresholdArr.slice(-1) // display only last played per game
+        // this returns draws that have at least one active play
+        var drawsByDateArr = drawsArr.slice() // slice copies array
+            .reverse()
+            .filter(activeNumber, playsArr);
+        // this returns draws that are over the minimum play threshold
+        var drawsByThresholdArr = drawsByDateArr.filter(
+            resultThreshold, gameRules);
+        drawsByThresholdArr.slice(-1)
             .forEach(
                 formatValidResults, {
                     game: gameRules,
@@ -667,8 +672,10 @@
 
     function getDataAndLoadMain() {
         "use strict";
+
         // bootstrap requirement
         $("[data-toggle=\"tooltip\"]").tooltip();
+
         // get data from spreadsheets then display
         google.script.run.withSuccessHandler(main).getData();
     }
