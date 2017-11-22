@@ -535,7 +535,9 @@
         "use strict";
         var game = this.game;
         // display only last active play
-        var playedArr = this.playedNumsArr.slice(-1);
+        var playedArr = this.playedNumsArr
+            .filter(findActiveNum, result)
+            .slice(-1);
         var date = new Date(result.drawDate);
         $("table#recentResultsTable tbody").append(
             "<tr data-toggle=\"tooltip\" title=\"View details\"" +
@@ -564,9 +566,7 @@
         var playsArr = playsObjs.get()[name].slice(1); // remove header
         var drawsArr = drawsObjs.get()[name];
         // this returns draws that have at least one active play
-        var drawsByDateArr = drawsArr.slice() // slice copies array
-            .reverse()
-            .filter(activeNumber, playsArr);
+        var drawsByDateArr = drawsArr.filter(activeNumber, playsArr);
         // this returns draws that are over the minimum play threshold
         var drawsByThresholdArr = drawsByDateArr.filter(
             resultThreshold, gameRules);
