@@ -16,12 +16,12 @@ function dollarStrToInt(dollarStr) {
     if (dollarStr.match(/^\$?\d+(,\d{3})*(\.\d+)?$/)) {
         return Number(
             dollarStr.match(/\d+(,\d{3})*(\.\d+)?/)[0]
-            .replace(",", ""));
+            .replace(/,/g, ""));
     }
     if (dollarStr.match(/^\$\d+(,\d{3})*(\.\d+)?\sMillion$/)) {
         return Number(
             dollarStr.match(/\d+(,\d{3})*(\.\d+)?/)[0]
-            .replace(",", "")) * 1000000;
+            .replace(/,/g, "")) * 1000000;
     }
     return undefined;
 }
@@ -238,9 +238,9 @@ let drawsObjs = (function () {
     }
 
     function getOneDrawing(name, date) {
-        let d = date.toISOString().getTime();
+        let dt = date.getTime();
         return objectsArr[name]
-            .filter((curVal) => curVal.drawDate.getTime() === d)[0];
+            .filter((curVal) => curVal.drawDate.getTime() === dt)[0];
     }
     return {
         get: get,
@@ -352,10 +352,11 @@ function formatAndCalcWins(curVal, index) {
  * @param {string} gameName
  * @param {number} datePrimitive
  */
-function compareDrawnToPlayed(gameName, date) {
+function compareDrawnToPlayed(gameName, datePrimitive) {
     "use strict";
     let game = gameObjs.get()[gameName];
     let plays = playsObjs.get()[gameName];
+    let date = new Date(datePrimitive);
     let total = 0;
     let drawing = drawsObjs.getOneDrawing(gameName, date);
     let cols = 0;
@@ -468,7 +469,7 @@ function viewDrawings(gameName) {
         $("tbody").append(
             "<tr title=\"Check for winnings\" " +
             "onClick=\"compareDrawnToPlayed('" + gameName + "', " +
-            date.valueOf() + ")\"></tr>");
+            date.getTime() + ")\"></tr>");
         $("tbody tr:eq(" + index + ")").append(
             "<td class=\"text-left\">" + date.toLocaleDateString(
                 "en-US", {
@@ -581,7 +582,7 @@ function formatValidResults(result) {
     $("table#recentResultsTable tbody").append(
         "<tr data-toggle=\"tooltip\" title=\"View details\"" +
         " onClick=\"compareDrawnToPlayed('" + game.name + "', " +
-        date.valueOf() + ")\">" +
+        date.getTime() + ")\">" +
         "<td class=\"text-left\">" + game.name + "</td>" +
         "<td class=\"text-center\">" + date.toLocaleDateString(
             "en-US", {
