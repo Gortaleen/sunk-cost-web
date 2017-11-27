@@ -7,31 +7,36 @@ var DEBUG = false;
 
 function deleteCache() {
   "use strict";
-  CacheService.getScriptCache().remove("sunk-cost-json-string");
+  var cache = CacheService.getScriptCache()
+  cache.remove("sunk-cost-json-string");
+  cache.remove("sunk-cost-home-html");
 }
 
 //**************************************************************************
 
-function include(filename) {
+function getHomeHtml() {
   "use strict";
   var cache = {};
-  var key = "sunk-cost-" + filename + "-html";
+  var cached = {};
+  var key = "sunk-cost-home-html";
   var value = "";
   var expirationInSeconds = 21600;  // cache for six hours
-  var cached = {};
-  var value = "";
-  if (DEBUG) {
-    return HtmlService.createHtmlOutputFromFile(filename).getContent();
+  if (DEBUG === true) {
+    return HtmlService.createHtmlOutputFromFile("Home").getContent();
   }
   cache = CacheService.getScriptCache();
-  key = "sunk-cost-" + filename + "-html";
   cached = cache.get(key);
   if (cached !== null) {
     return cached;
   }
-  value = HtmlService.createHtmlOutputFromFile(filename).getContent();
+  value = HtmlService.createHtmlOutputFromFile("Home").getContent();
   cache.put(key, value, expirationInSeconds);
   return value;
+}
+
+function include(filename) {
+  "use strict";
+  return HtmlService.createHtmlOutputFromFile(filename).getContent();
 }
 
 //**************************************************************************

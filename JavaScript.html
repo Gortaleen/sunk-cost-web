@@ -707,7 +707,7 @@ function getDataAndLoadMain() {
     google.script.run.withSuccessHandler(main).getData();
 
     // get and store html for home page
-    google.script.run.withSuccessHandler(homePage.set).include("Home");
+    google.script.run.withSuccessHandler(homePage.set).getHomeHtml();
 }
 
 //***************************** jQuery functions ***************************
