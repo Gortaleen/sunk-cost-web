@@ -65,27 +65,32 @@ let gameObjs = (function () {
      * Used by the reduce function to map match-strings to their respective 
      * values.
      * @param {object} obj - An accumulator.
-     * @param {object} curVal - A 1D array of match-strings and values.
+     * @param {object} matchObjArr - A 1D array of match-strings and values.
      * @return {object} An object of match-strings mapped to values.
      */
-    function getMatchValuesObj(obj, curVal) {
-        let matchVal = curVal[1];
-        obj[matchVal] = curVal[2];
+    function getMatchValuesObj(obj, matchObjArr) {
+        let matchStr = matchObjArr[1].padStart(2, "0"); // name is string
+        if (matchObjArr[2].toLowerCase() === "jackpot") {
+            obj[matchStr] = "jackpot";
+        } else {
+            obj[matchStr] = dollarStrToInt(matchObjArr[2]); // value is number
+        }
         return obj;
     }
 
     /**
-     * @param {object} curVal - A 2D array of game rules names and values.
+     * @param {object} rulesObj - object whose "data" property is a 2D array of 
+     *                            game rules names and values.
      * @return {Object} An instance of the Game class.
      */
-    function classifyGameRules(curVal) {
-        let id = curVal.data[0][1];
-        let name = curVal.data[1][1];
-        let ball = curVal.data[2][1];
-        let bonus = curVal.data[3][1];
-        let threshold = dollarStrToInt(curVal.data[4][1]);
-        let price = curVal.data[5][1];
-        let rules = curVal.data.slice(6).reduce(getMatchValuesObj, {});
+    function classifyGameRules(rulesObj) {
+        let id = rulesObj.data[0][1];
+        let name = rulesObj.data[1][1];
+        let ball = rulesObj.data[2][1];
+        let bonus = rulesObj.data[3][1];
+        let threshold = dollarStrToInt(rulesObj.data[4][1]);
+//        let price = rulesObj.data[5][1];
+        let rules = rulesObj.data.slice(6).reduce(getMatchValuesObj, {});
         let game = new Game(name, id, ball, bonus, rules, threshold);
         return game;
     }
@@ -122,7 +127,7 @@ let playsObjs = (function () {
         let numStrArr = data.slice(0, 6); // allow up to six numbers played.
         let startDate = {};
         let endDate = {};
-        if (data[8] !== null && data[8] !== undefined && data[8] !== '') {
+        if (data[8] !== null && data[8] !== undefined && data[8] !== "") {
             startDate = new Date(data[8]);
         } else {
             startDate = new Date();
@@ -131,7 +136,7 @@ let playsObjs = (function () {
             startDate.setSeconds(0);
             startDate.setMilliseconds(0);
         }
-        if (data[9] !== null && data[9] !== undefined && data[9] !== '') {
+        if (data[9] !== null && data[9] !== undefined && data[9] !== "") {
             endDate = new Date(data[9]);
         } else {
             endDate = new Date();
@@ -193,7 +198,7 @@ let drawsObjs = (function () {
         let estJackpot = dollarStrToInt(data[6]);
         let drawDate = {};
         let nextDrawDate = {};
-        if (data[0] !== null && data[0] !== undefined && data[0] !== '') {
+        if (data[0] !== null && data[0] !== undefined && data[0] !== "") {
             drawDate = new Date(data[0]);
         } else {
             drawDate = new Date();
@@ -202,7 +207,7 @@ let drawsObjs = (function () {
             drawDate.setSeconds(0);
             drawDate.setMilliseconds(0);
         }
-        if (data[5] !== null && data[5] !== undefined && data[5] !== '') {
+        if (data[5] !== null && data[5] !== undefined && data[5] !== "") {
             nextDrawDate = new Date(data[5]);
         } else {
             nextDrawDate = new Date();
@@ -268,15 +273,35 @@ let kittyObj = (function () {
     };
 }());
 
+//********************** Set and get homePage object ***********************
+
+let homePage = (function () {
+    "use strict";
+    let homePageHtml = "";
+
+    function get() {
+        return homePageHtml;
+    }
+
+    function set(html) {
+        homePageHtml = html;
+    }
+
+    return {
+        get: get,
+        set: set
+    };
+}());
+
 //**************************** Winnings! Page ******************************
 
-function formatAndCalcWins(curVal, index) {
+function formatAndCalcWins(playObj, index) {
     "use strict";
     let game = this.game;
     let drawing = this.drawing;
     let drawDate = drawing.drawDate;
-    let endDate = curVal.endDate;
-    let startDate = curVal.startDate;
+    let endDate = playObj.endDate;
+    let startDate = playObj.startDate;
     let matches = "";
     let match = 0;
     let total = 0;
@@ -288,14 +313,14 @@ function formatAndCalcWins(curVal, index) {
     } else {
         $("tbody").append("<tr>");
     }
-    matches = curVal.numStrArr.filter(
-            function (curVal) {
-                match = drawing.numStrArr.indexOf(curVal);
+    matches = playObj.numStrArr.filter(
+            function (playedNum) {
+                match = drawing.numStrArr.indexOf(playedNum);
                 $("tbody tr:eq(" + index + ")")
                     .append("<td" +
                         ((match >= 0) ? " class=\"alert alert-success\">" :
                             ">") +
-                        curVal + "</td>");
+                        playedNum + "</td>");
                 return match >= 0;
             })
         .length
@@ -303,34 +328,34 @@ function formatAndCalcWins(curVal, index) {
     if (drawing.ball !== "" &&
         drawing.ball !== null &&
         drawing.ball !== undefined) {
-        if (drawing.ball === curVal.ball) {
+        if (drawing.ball === playObj.ball) {
             matches += "1";
             $("tbody tr:eq(" + index + ")")
                 .append("<td class=\"alert alert-success\">" +
-                    curVal.ball + "</td>");
+                    playObj.ball + "</td>");
         } else {
             matches += "0";
             $("tbody tr:eq(" + index + ")").append("<td>" +
-                curVal.ball + "</td>");
+                playObj.ball + "</td>");
         }
+    } else {
+        matches = matches.padStart(2, "0");
     }
     total = game.gameRules[matches] || 0;
-    if (typeof total === "string") {
-        if (total.toUpperCase() === "JACKPOT") {
-            total = drawing.jackpot;
-        }
+    if (total === "jackpot") {
+        total = drawing.jackpot;
     }
-    if (curVal.bonus && curVal.bonus === drawing.bonus) {
+    if (playObj.bonus && playObj.bonus === drawing.bonus) {
         total *= drawing.bonus;
         $("tbody tr:eq(" + index + ")").append(
             "<td class=\"alert alert-success\">" +
-            curVal.bonus + "</td>");
+            playObj.bonus + "</td>");
     } else if (drawing.bonus) {
         $("tbody tr:eq(" + index + ")")
-            .append("<td>" + curVal.bonus + "</td>");
+            .append("<td>" + playObj.bonus + "</td>");
     }
     // calc win
-    if (total > 0 && strike) {
+    if (total > 0 && strike === true) {
         $("tbody tr:eq(" + index + ")")
             .append("<td class=\"alert alert-success text-right\">" +
                 integerToUSD(total).strike() + "</td>");
@@ -365,7 +390,7 @@ function compareDrawnToPlayed(gameName, datePrimitive) {
     $("div").append(
         "<ol class=\"breadcrumb\">" +
         "<li class=\"breadcrumb-item\">" +
-        "<a href=\"javascript:home()\">Home</a>" +
+        "<a href=\"javascript:displayHomePage()\">Home</a>" +
         "</li>" +
         "<li class=\"breadcrumb-item\">" +
         "<a href=\"javascript:viewDrawings('" + gameName + "')\">" +
@@ -415,7 +440,7 @@ function compareDrawnToPlayed(gameName, datePrimitive) {
             game,
             drawing
         })
-        .reduce((total, curVal) => total + curVal);
+        .reduce((total, winnings) => total + winnings);
     $("tfoot").append(
         "<tr><th colspan=\"" + cols + "\"></th>" +
         "<th class=\"text-right\">Total:&nbsp;" +
@@ -430,15 +455,15 @@ function compareDrawnToPlayed(gameName, datePrimitive) {
  */
 function viewDrawings(gameName) {
     "use strict";
-    let tempArr = drawsObjs.get()[gameName]
+    let drawsTempArr = drawsObjs.get()[gameName]
         .slice(); // clone array to protect from reverse method
     let game = gameObjs.get()[gameName];
     $("div").empty();
     $("div").append("<h1>LotteryWeb</h1>");
     $("div").append(
         "<ol class=\"breadcrumb\">" +
-        "<li class=\"breadcrumb-item\"><a href=\"javascript:home()\">" +
-        "Home</a></li>" +
+        "<li class=\"breadcrumb-item\">" +
+        "<a href=\"javascript:displayHomePage()\">Home</a></li>" +
         "<li class=\"breadcrumb-item active\">Drawings</li>" +
         "</ol>"
     );
@@ -464,8 +489,8 @@ function viewDrawings(gameName) {
         $("thead tr").append("<th>" + game.bonus + "</th>");
     }
     $("thead tr").append("<th class=\"text-right\">Jackpot</th>");
-    tempArr.reverse().slice(0, 20).forEach(function (curVal, index) {
-        let date = curVal.drawDate;
+    drawsTempArr.reverse().slice(0, 20).forEach(function (drawObj, index) {
+        let date = drawObj.drawDate;
         $("tbody").append(
             "<tr title=\"Check for winnings\" " +
             "onClick=\"compareDrawnToPlayed('" + gameName + "', " +
@@ -477,24 +502,24 @@ function viewDrawings(gameName) {
                     day: "2-digit",
                     year: "numeric"
                 }) + "</td>");
-        curVal.numStrArr.forEach(function (curVal) {
+        drawObj.numStrArr.forEach(function (drawnNum) {
             $("tbody tr:eq(" + index + ")")
                 .append("<td>" +
-                    curVal.toString().padStart(2, "0") +
+                    drawnNum.toString().padStart(2, "0") +
                     "</td>");
         });
         if (game.ball) {
             $("tbody tr:eq(" + index + ")")
                 .append("<td>" +
-                    curVal.ball.toString().padStart(2, "0") +
+                    drawObj.ball.toString().padStart(2, "0") +
                     "</td>");
         }
         if (game.bonus) {
             $("tbody tr:eq(" + index + ")")
-                .append("<td>" + curVal.bonus + "</td>");
+                .append("<td>" + drawObj.bonus + "</td>");
         }
         $("tbody tr:eq(" + index + ")").append("<td class=\"text-right\">" +
-            integerToUSD(curVal.jackpot) + "</td>");
+            integerToUSD(drawObj.jackpot) + "</td>");
     });
 }
 
@@ -576,8 +601,7 @@ function formatValidResults(result) {
     let game = this.game;
     // display only last active play
     let playedArr = this.playedNumsArr
-        .filter(findActiveNum, result)
-        .slice(-1);
+        .filter(findActiveNum, result);
     let date = result.drawDate;
     $("table#recentResultsTable tbody").append(
         "<tr data-toggle=\"tooltip\" title=\"View details\"" +
@@ -623,48 +647,11 @@ function displayRecentResults(gameRawObj) {
 /**
  *
  */
-function home() {
+function displayHomePage() {
     "use strict";
     let gameRulesArr = Object.values(gameObjs.get());
     $("div").empty();
-    $("div").append(
-        "<h1>LotteryWeb</h1>" +
-        "<ol class=\"breadcrumb\">" +
-        "<li class=\"breadcrumb-item active\">Home</li>" +
-        "</ol>" +
-        "<table class=\"table table-bordered table-condensed table-sm " +
-        "table-hover\" id=\"estJackpotsTable\">" +
-        "<caption>Estimated Jackpots</caption>" +
-        "<thead>" +
-        "<tr>" +
-        "<th class=\"text-left\">Game</th>" +
-        "<th class=\"text-center\">Next Draw Date</th>" +
-        "<th class=\"text-right\">Estimated Jackpot</th>" +
-        "</tr>" +
-        "</thead>" +
-        "<tfoot></tfoot>" +
-        "<tbody>" +
-        "<tr>" +
-        "</tr>" +
-        "</tbody>" +
-        "</table>" +
-        "<table class=\"table table-bordered table-condensed table-sm " +
-        "table-hover\" id=\"recentResultsTable\">" +
-        "<caption>Recent Results</caption>" +
-        "<thead>" +
-        "<tr>" +
-        "<th class=\"text-left\">Game</th>" +
-        "<th class=\"text-center\">Draw Date</th>" +
-        "<th class=\"text-right\">Winnings</th>" +
-        "</tr>" +
-        "</thead>" +
-        "<tfoot></tfoot>" +
-        "<tbody>" +
-        "<tr>" +
-        "</tr>" +
-        "</tbody>" +
-        "</table>"
-    );
+    $("div").append(homePage.get());
     gameRulesArr.forEach(displayEstJackpots);
 
     // show kitty balance
@@ -718,6 +705,9 @@ function getDataAndLoadMain() {
 
     // get data from spreadsheets then display
     google.script.run.withSuccessHandler(main).getData();
+
+    // get and store html for home page
+    google.script.run.withSuccessHandler(homePage.set).include("Home");
 }
 
 //***************************** jQuery functions ***************************

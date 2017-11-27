@@ -19,18 +19,22 @@ function findMatches(playedObj) {
             return drawnArr.indexOf(numStr);
         }, drawnObj.numStrArr)
         .filter((curVal) => curVal >= 0)
-        .length;
-    let ballMatches = 0;
-    let result = "";
-    if (playedObj.ball === "" ||
-        playedObj.ball === null ||
-        playedObj.ball === undefined) {
-        result = gameRules[numStrMatches.toString()] || 0;
-    } else {
+        .length
+        .toString();
+    let ballMatches = "";
+    let result = 0;
+    let matchStr = "";
+    if (playedObj.ball !== "" &&
+        playedObj.ball !== null &&
+        playedObj.ball !== undefined) {
         ballMatches = (playedObj.ball === drawnObj.ball) ? "1" : "0";
-        result = gameRules[numStrMatches.toString() + ballMatches] || 0;
+        matchStr = (numStrMatches + ballMatches);
+    } else {
+        // padding needed because match strings are two characters
+        matchStr = numStrMatches.padStart(2, "0");
     }
-    if (result.toString().toLowerCase() === "jackpot") {
+    result = gameRules[matchStr] || 0;
+    if (result === "jackpot") {
         return drawnObj.jackpot;
     }
     if (drawnObj.bonus === playedObj.bonus) {
