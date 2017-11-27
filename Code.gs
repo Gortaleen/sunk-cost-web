@@ -15,7 +15,7 @@ function getSheetData(sheet) {
   "use strict";
   return {
     name: sheet.getName(),
-    data: sheet.getDataRange().getValues()
+    data: sheet.getDataRange().getDisplayValues()
   };
 }
 
@@ -53,7 +53,7 @@ function getData() {
       drawnNumsArr: drawnNumsSs.getSheets().map(getSheetData),
       gameRulesArr: gameRulesSs.getSheets().map(getSheetData),
       kittyArr: kittySs.getSheetByName("Balance Sheet")
-      .getDataRange().getValues()
+      .getDataRange().getDisplayValues()
     }
   );
   cache.put("lottery-json-string", lotteryJsonStr, 3600); // cache for one hour

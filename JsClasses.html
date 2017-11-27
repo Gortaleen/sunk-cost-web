@@ -1,88 +1,88 @@
-<script type="application/ecmascript">
-    /*jslint browser, maxlen: 80, this, white*/
-    /*global $, google*/
+<script>
+/*jslint browser, maxlen: 80, this, white*/
+/*global $, google*/
 
-    //********************* Game Class Definition ******************************
+//*********************** Game Class Definition ******************************
 
-    /**
-     * @param {object} playedObj
-     * @this {object}
-     */
-    function findMatches(playedObj) {
-        "use strict";
-        let drawnObj = this.drawnObj;
-        let gameRules = this.gameRules;
-        // find no. of num matches between drawn and played
-        let numStrMatches = playedObj.numStrArr
-            .map(function (numStr) {
-                let drawnArr = this;
-                return drawnArr.indexOf(numStr);
-            }, drawnObj.numStrArr)
-            .filter((curVal) => curVal >= 0)
-            .length;
-        let ballMatches = 0;
-        let result = "";
-        if (playedObj.ball === "" ||
-            playedObj.ball === null ||
-            playedObj.ball === undefined) {
-            result = gameRules[numStrMatches.toString()] || 0;
-        } else {
-            ballMatches = (playedObj.ball === drawnObj.ball) ? "1" : "0";
-            result = gameRules[numStrMatches.toString() + ballMatches] || 0;
-        }
-        if (result.toString().toLowerCase() === "jackpot") {
-            return drawnObj.jackpot;
-        }
-        if (drawnObj.bonus === playedObj.bonus) {
-            return result * drawnObj.bonus;
-        }
-        return result;
+/**
+ * @param {object} playedObj
+ * @this {object}
+ */
+function findMatches(playedObj) {
+    "use strict";
+    let drawnObj = this.drawnObj;
+    let gameRules = this.gameRules;
+    // find no. of num matches between drawn and played
+    let numStrMatches = playedObj.numStrArr
+        .map(function (numStr) {
+            let drawnArr = this;
+            return drawnArr.indexOf(numStr);
+        }, drawnObj.numStrArr)
+        .filter((curVal) => curVal >= 0)
+        .length;
+    let ballMatches = 0;
+    let result = "";
+    if (playedObj.ball === "" ||
+        playedObj.ball === null ||
+        playedObj.ball === undefined) {
+        result = gameRules[numStrMatches.toString()] || 0;
+    } else {
+        ballMatches = (playedObj.ball === drawnObj.ball) ? "1" : "0";
+        result = gameRules[numStrMatches.toString() + ballMatches] || 0;
     }
-
-    /**
-     * Calculates and returns winnings from generically ruled games such as 
-     * Mega Millions and Powerball.
-     * @param {object} gameRules
-     * @param {object} numsPlayed
-     * @param {object} numsDrawn
-     * @return {number} calculated winnings
-     */
-    function genericResult(gameRules, playedArr, drawnObj) {
-        "use strict";
-        let result = playedArr.map(
-                findMatches, {
-                    drawnObj: drawnObj,
-                    gameRules: gameRules
-                })
-            .reduce((total, curVal) => total + curVal, 0);
-        return result;
+    if (result.toString().toLowerCase() === "jackpot") {
+        return drawnObj.jackpot;
     }
-
-    /**
-     * Game class definition
-     * @constructor
-     */
-    function Game(gameName, gameId, ball, bonus, gameRules, threshold) {
-        "use strict";
-        this.name = gameName;
-        this.id = gameId;
-        this.ball = ball;
-        this.bonus = bonus;
-        this.gameRules = gameRules;
-        this.threshold = threshold;
+    if (drawnObj.bonus === playedObj.bonus) {
+        return result * drawnObj.bonus;
     }
+    return result;
+}
 
-    /**
-     *
-     */
-    Game.prototype.calcResult = function (playedArr, drawnObj) {
-        "use strict";
-        let gameFxns = {
-            "Mega Millions": genericResult,
-            "Powerball": genericResult,
-            "default": genericResult
-        };
-        let gameFxn = gameFxns[this.name] || gameFxns.default;
-        return gameFxn(this.gameRules, playedArr, drawnObj);
+/**
+ * Calculates and returns winnings from generically ruled games such as 
+ * Mega Millions and Powerball.
+ * @param {object} gameRules
+ * @param {object} numsPlayed
+ * @param {object} numsDrawn
+ * @return {number} calculated winnings
+ */
+function genericResult(gameRules, playedArr, drawnObj) {
+    "use strict";
+    let result = playedArr.map(
+            findMatches, {
+                drawnObj: drawnObj,
+                gameRules: gameRules
+            })
+        .reduce((total, curVal) => total + curVal, 0);
+    return result;
+}
+
+/**
+ * Game class definition
+ * @constructor
+ */
+function Game(gameName, gameId, ball, bonus, gameRules, threshold) {
+    "use strict";
+    this.name = gameName;
+    this.id = gameId;
+    this.ball = ball;
+    this.bonus = bonus;
+    this.gameRules = gameRules;
+    this.threshold = threshold;
+}
+
+/**
+ *
+ */
+Game.prototype.calcResult = function (playedArr, drawnObj) {
+    "use strict";
+    let gameFxns = {
+        "Mega Millions": genericResult,
+        "Powerball": genericResult,
+        "default": genericResult
     };
+    let gameFxn = gameFxns[this.name] || gameFxns.default;
+    return gameFxn(this.gameRules, playedArr, drawnObj);
+};
 </script>
