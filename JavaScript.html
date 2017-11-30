@@ -89,7 +89,7 @@ let gameObjs = (function () {
         let ball = rulesObj.data[2][1];
         let bonus = rulesObj.data[3][1];
         let threshold = dollarStrToInt(rulesObj.data[4][1]);
-//        let price = rulesObj.data[5][1];
+        //        let price = rulesObj.data[5][1];
         let rules = rulesObj.data.slice(6).reduce(getMatchValuesObj, {});
         let game = new Game(name, id, ball, bonus, rules, threshold);
         return game;
@@ -530,9 +530,9 @@ function displayEstJackpots(gameRules, index) {
     let drawingObj = drawsObjs.get()[gameRules.name].slice(-1)[0];
     let date = drawingObj.nextDrawDate;
     if (index === 0) {
-        $("table#estJackpotsTable tbody").empty();
+        $("table#table0 tbody").empty();
     }
-    $("table#estJackpotsTable tbody").append(
+    $("table#table0 tbody").append(
         "<tr title=\"View " + gameRules.name + " Drawings\"" +
         "onClick=\"viewDrawings('" + gameRules.name + "')\">" +
         "<td class=\"text-left\">" + gameRules.name + "</td>" +
@@ -603,7 +603,7 @@ function formatValidResults(result) {
     let playedArr = this.playedNumsArr
         .filter(findActiveNum, result);
     let date = result.drawDate;
-    $("table#recentResultsTable tbody").append(
+    $("table#table1 tbody").append(
         "<tr data-toggle=\"tooltip\" title=\"View details\"" +
         " onClick=\"compareDrawnToPlayed('" + game.name + "', " +
         date.getTime() + ")\">" +
@@ -655,11 +655,12 @@ function displayHomePage() {
     gameRulesArr.forEach(displayEstJackpots);
 
     // show kitty balance
-    $("table#estJackpotsTable tfoot").append(
+    $("table#table0 tfoot").append(
         "<tr><th colspan=\"2\" class=\"text-right\">Kitty Balance:</th>" +
         "<th class=\"text-right\">" + integerToUSD(kittyObj.get()) +
         "</th></tr>");
 
+    $("table#table1 tbody").empty(); // clear the spinners
     gameRulesArr.forEach(displayRecentResults);
 }
 
@@ -686,14 +687,13 @@ function main(rawDataJsonStr) {
 
     rawDataJsonObj.gameRulesArr.forEach(displayEstJackpots);
 
-    $("table#recentResultsTable tbody").empty(); // clear the spinners
-
     // show kitty balance
-    $("table#estJackpotsTable tfoot").append(
+    $("table#table0 tfoot").append(
         "<tr><th colspan=\"2\" class=\"text-right\">Kitty Balance:</th>" +
         "<th class=\"text-right\">" + integerToUSD(kittyObj.get()) +
         "</th></tr>");
 
+    $("table#table1 tbody").empty(); // clear the spinners
     rawDataJsonObj.gameRulesArr.forEach(displayRecentResults);
 }
 
@@ -706,8 +706,7 @@ function getDataAndLoadMain() {
     // get data from spreadsheets then display
     google.script.run.withSuccessHandler(main).getData();
 
-    // get and store html for home page
-    google.script.run.withSuccessHandler(homePage.set).getHomeHtml();
+    homePage.set($("div").html());
 }
 
 //***************************** jQuery functions ***************************

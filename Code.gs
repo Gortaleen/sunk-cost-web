@@ -9,30 +9,9 @@ function deleteCache() {
   "use strict";
   var cache = CacheService.getScriptCache()
   cache.remove("sunk-cost-json-string");
-  cache.remove("sunk-cost-home-html");
 }
 
 //**************************************************************************
-
-function getHomeHtml() {
-  "use strict";
-  var cache = {};
-  var cached = {};
-  var key = "sunk-cost-home-html";
-  var value = "";
-  var expirationInSeconds = 21600;  // cache for six hours
-  if (DEBUG === true) {
-    return HtmlService.createHtmlOutputFromFile("Home").getContent();
-  }
-  cache = CacheService.getScriptCache();
-  cached = cache.get(key);
-  if (cached !== null) {
-    return cached;
-  }
-  value = HtmlService.createHtmlOutputFromFile("Home").getContent();
-  cache.put(key, value, expirationInSeconds);
-  return value;
-}
 
 function include(filename) {
   "use strict";
