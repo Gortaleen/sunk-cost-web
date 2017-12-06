@@ -1,6 +1,19 @@
 <script>
 /*jslint browser, maxlen: 80, this, white*/
 /*global $, Game, google, window*/
+/*property
+    append, ball, bonus, calcResult, currency, data, day, drawDate, drawing,
+    drawnNumsArr, empty, endDate, estJackpot, filter, forEach, game, gameRules,
+    gameRulesArr, get, getData, getOneDrawing, getTime, html, indexOf, jackpot,
+    kittyArr, length, map, match, maximumFractionDigits, minimumFractionDigits,
+    month, name, nextDrawDate, numStrArr, padStart, parse, playedNumsArr, push,
+    reduce, replace, reverse, run, script, set, setHours, setMilliseconds,
+    setMinutes, setSeconds, slice, some, split, startDate, strike, style,
+    threshold, toLocaleDateString, toLocaleString, toLowerCase, toString,
+    tooltip, values, withSuccessHandler, year
+*/
+
+var projectName;
 
 //****************************** Utilities *********************************
 
@@ -386,7 +399,7 @@ function compareDrawnToPlayed(gameName, datePrimitive) {
     let drawing = drawsObjs.getOneDrawing(gameName, date);
     let cols = 0;
     $("div").empty();
-    $("div").append("<h1>LotteryWeb</h1>");
+    $("div").append("<h1>" + projectName + "</h1>");
     $("div").append(
         "<ol class=\"breadcrumb\">" +
         "<li class=\"breadcrumb-item\">" +
@@ -459,7 +472,7 @@ function viewDrawings(gameName) {
         .slice(); // clone array to protect from reverse method
     let game = gameObjs.get()[gameName];
     $("div").empty();
-    $("div").append("<h1>LotteryWeb</h1>");
+    $("div").append("<h1>" + projectName + "</h1>");
     $("div").append(
         "<ol class=\"breadcrumb\">" +
         "<li class=\"breadcrumb-item\">" +
@@ -684,7 +697,9 @@ function main(rawDataJsonStr) {
     drawsObjs.set(rawDataJsonObj.drawnNumsArr);
     /** @global */
     kittyObj.set(rawDataJsonObj.kittyArr[0][5]);
-
+    /** @global */
+    projectName = rawDataJsonObj.projectName;
+    
     rawDataJsonObj.gameRulesArr.forEach(displayEstJackpots);
 
     // show kitty balance
@@ -705,7 +720,7 @@ function getDataAndLoadMain() {
 
     // get data from spreadsheets then display
     google.script.run.withSuccessHandler(main).getData();
-
+    
     homePage.set($("div").html());
 }
 

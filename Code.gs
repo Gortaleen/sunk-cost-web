@@ -1,7 +1,7 @@
 /*jslint browser, maxlen: 80, white*/
 /*global CacheService, HtmlService, Logger, PropertiesService, SpreadsheetApp*/
 
-var DEBUG = false;
+var DEBUG = true;
 
 //**************************************************************************
 
@@ -41,6 +41,9 @@ function getData() {
   var gameRulesSs = {};
   var kittySs = {};
   var lotteryJsonStr = "";
+  var projectName = PropertiesService.getScriptProperties()
+  .getProperties()
+  .projectName;
   // Cache variables
   var cache = CacheService.getScriptCache();
   var key = "sunk-cost-json-string";
@@ -71,7 +74,8 @@ function getData() {
       drawnNumsArr: drawnNumsSs.getSheets().map(getSheetData),
       gameRulesArr: gameRulesSs.getSheets().map(getSheetData),
       kittyArr: kittySs.getSheetByName("Balance Sheet")
-      .getDataRange().getDisplayValues()
+      .getDataRange().getDisplayValues(),
+      projectName: projectName
     }
   );
   if (DEBUG === false) {
@@ -84,9 +88,13 @@ function getData() {
 
 function doGet() {
   "use strict";
-  return HtmlService.createTemplateFromFile("Index").evaluate()
-  .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
-  .setSandboxMode(HtmlService.SandboxMode.IFRAME);
+  var tmpl = HtmlService.createTemplateFromFile("Index");
+  tmpl.projectName = PropertiesService.getScriptProperties()
+  .getProperties()
+  .projectName;
+  return tmpl.evaluate()
+  .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  //  .setSandboxMode(HtmlService.SandboxMode.IFRAME);
 }
 
 //**************************************************************************
