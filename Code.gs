@@ -1,7 +1,7 @@
 /*jslint browser, maxlen: 80, white*/
 /*global CacheService, HtmlService, Logger, PropertiesService, SpreadsheetApp*/
 
-var DEBUG = true;
+var DEBUG = false;
 
 //**************************************************************************
 
