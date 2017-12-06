@@ -320,9 +320,7 @@ function formatAndCalcWins(playObj, index) {
     let total = 0;
     let strike = false;
     if (startDate > drawDate || drawDate > endDate) {
-        $("tbody").append("<tr class=\"text-muted\" " +
-            "title=\"Numbers not played\">");
-        strike = true;
+        return 0;
     } else {
         $("tbody").append("<tr>");
     }
