@@ -401,10 +401,12 @@ function compareDrawnToPlayed(gameName, datePrimitive) {
     $("div").append(
         "<ol class=\"breadcrumb\">" +
         "<li class=\"breadcrumb-item\">" +
-        "<a href=\"javascript:displayHomePage()\">Home</a>" +
+        "<a href=\"javascript:void(0)\" onclick=\"displayHomePage()\">"
+        + "Home</a>" +
         "</li>" +
         "<li class=\"breadcrumb-item\">" +
-        "<a href=\"javascript:viewDrawings('" + gameName + "')\">" +
+        "<a href=\"javascript:void(0)\""
+        + " onclick=\"viewDrawings('" + gameName + "')\">" +
         "Drawings</a>" +
         "</li>" +
         "<li class=\"breadcrumb-item active\">Winnings</li>" +
@@ -474,7 +476,8 @@ function viewDrawings(gameName) {
     $("div").append(
         "<ol class=\"breadcrumb\">" +
         "<li class=\"breadcrumb-item\">" +
-        "<a href=\"javascript:displayHomePage()\">Home</a></li>" +
+        "<a href=\"javascript:void(0)\" onclick=\"displayHomePage()\">"
+        + "Home</a></li>" +
         "<li class=\"breadcrumb-item active\">Drawings</li>" +
         "</ol>"
     );

@@ -7,8 +7,11 @@ var DEBUG = false;
 
 function deleteCache() {
   "use strict";
-  var cache = CacheService.getScriptCache()
-  cache.remove("sunk-cost-json-string");
+  var cache = CacheService.getScriptCache();
+  var projectName = PropertiesService.getScriptProperties()
+  .getProperties()
+  .projectName;
+  cache.remove(projectName.replace(" ", "-") + "-json-string");
 }
 
 //**************************************************************************
@@ -46,7 +49,7 @@ function getData() {
   .projectName;
   // Cache variables
   var cache = CacheService.getScriptCache();
-  var key = "sunk-cost-json-string";
+  var key = projectName.replace(" ", "-") + "-json-string";
   var expirationInSeconds = 3600; // cache for one hour
   var cached = {};
   //
