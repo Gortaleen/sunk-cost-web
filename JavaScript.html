@@ -6,14 +6,13 @@
     drawnNumsArr, empty, endDate, estJackpot, filter, forEach, game, gameRules,
     gameRulesArr, get, getData, getOneDrawing, getTime, html, indexOf, jackpot,
     kittyArr, length, map, match, maximumFractionDigits, minimumFractionDigits,
-    month, name, nextDrawDate, numStrArr, padStart, parse, playedNumsArr, push,
-    reduce, replace, reverse, run, script, set, setHours, setMilliseconds,
-    setMinutes, setSeconds, slice, some, split, startDate, strike, style,
-    threshold, toLocaleDateString, toLocaleString, toLowerCase, toString,
-    tooltip, values, withSuccessHandler, year
+    month, name, nextDrawDate, numStrArr, padStart, parse, playedNumsArr, 
+    projectName, push, reduce, replace, reverse, run, script, set, setHours,
+    setMilliseconds, setMinutes, setSeconds, slice, some, split, startDate, 
+    strike, style, threshold, toLocaleDateString, toLocaleString, toLowerCase,
+    toString, tooltip, values, withSuccessHandler, year
 */
-
-var projectName;
+let projectName;
 
 //****************************** Utilities *********************************
 
@@ -321,9 +320,8 @@ function formatAndCalcWins(playObj, index) {
     let strike = false;
     if (startDate > drawDate || drawDate > endDate) {
         return 0;
-    } else {
-        $("tbody").append("<tr>");
     }
+    $("tbody").append("<tr>");
     matches = playObj.numStrArr.filter(
             function (playedNum) {
                 match = drawing.numStrArr.indexOf(playedNum);
@@ -401,12 +399,12 @@ function compareDrawnToPlayed(gameName, datePrimitive) {
     $("div").append(
         "<ol class=\"breadcrumb\">" +
         "<li class=\"breadcrumb-item\">" +
-        "<a href=\"javascript:void(0)\" onclick=\"displayHomePage()\">"
-        + "Home</a>" +
+        "<a href=\"javascript:void(0)\" onclick=\"displayHomePage()\">" +
+        "Home</a>" +
         "</li>" +
         "<li class=\"breadcrumb-item\">" +
-        "<a href=\"javascript:void(0)\""
-        + " onclick=\"viewDrawings('" + gameName + "')\">" +
+        "<a href=\"javascript:void(0)\"" +
+        " onclick=\"viewDrawings('" + gameName + "')\">" +
         "Drawings</a>" +
         "</li>" +
         "<li class=\"breadcrumb-item active\">Winnings</li>" +
@@ -476,8 +474,8 @@ function viewDrawings(gameName) {
     $("div").append(
         "<ol class=\"breadcrumb\">" +
         "<li class=\"breadcrumb-item\">" +
-        "<a href=\"javascript:void(0)\" onclick=\"displayHomePage()\">"
-        + "Home</a></li>" +
+        "<a href=\"javascript:void(0)\" onclick=\"displayHomePage()\">" +
+        "Home</a></li>" +
         "<li class=\"breadcrumb-item active\">Drawings</li>" +
         "</ol>"
     );
@@ -700,7 +698,7 @@ function main(rawDataJsonStr) {
     kittyObj.set(rawDataJsonObj.kittyArr[0][5]);
     /** @global */
     projectName = rawDataJsonObj.projectName;
-    
+
     rawDataJsonObj.gameRulesArr.forEach(displayEstJackpots);
 
     // show kitty balance
@@ -721,7 +719,7 @@ function getDataAndLoadMain() {
 
     // get data from spreadsheets then display
     google.script.run.withSuccessHandler(main).getData();
-    
+
     homePage.set($("div").html());
 }
 

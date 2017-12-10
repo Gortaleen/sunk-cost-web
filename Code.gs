@@ -1,5 +1,8 @@
 /*jslint browser, maxlen: 80, white*/
-/*global CacheService, HtmlService, Logger, PropertiesService, SpreadsheetApp*/
+/*global 
+CacheService, HtmlService, Logger, PropertiesService, Session,
+SpreadsheetApp
+*/
 
 var DEBUG = false;
 
