@@ -95,6 +95,7 @@ function doGet() {
   tmpl.projectName = PropertiesService.getScriptProperties()
   .getProperties()
   .projectName;
+  tmpl.userID = Session.getActiveUser().getEmail();
   return tmpl.evaluate()
   .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
   //  .setSandboxMode(HtmlService.SandboxMode.IFRAME);
