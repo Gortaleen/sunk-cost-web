@@ -311,16 +311,10 @@ function formatAndCalcWins(playObj, index) {
     "use strict";
     let game = this.game;
     let drawing = this.drawing;
-    let drawDate = drawing.drawDate;
-    let endDate = playObj.endDate;
-    let startDate = playObj.startDate;
     let matches = "";
     let match = 0;
     let total = 0;
     let strike = false;
-    if (startDate > drawDate || drawDate > endDate) {
-        return 0;
-    }
     $("tbody").append("<tr>");
     matches = playObj.numStrArr.filter(
             function (playedNum) {
@@ -378,7 +372,6 @@ function formatAndCalcWins(playObj, index) {
             .append("<td class=\"text-right\">" +
                 integerToUSD(total) + "</td>");
     }
-    $("tbody tr:eq(" + index + ")").append("</tr>");
     return total;
 }
 
@@ -447,7 +440,14 @@ function compareDrawnToPlayed(gameName, datePrimitive) {
         $("thead tr").append("<th>" + game.bonus + "</th>");
     }
     $("thead tr").append("<th class=\"text-right\">Winnings!</th>");
-    total = plays.slice(1).map(formatAndCalcWins, {
+    total = plays.slice(1)
+        .filter(function (playObj) {
+            let drawDate = drawing.drawDate;
+            let endDate = playObj.endDate;
+            let startDate = playObj.startDate;
+            return startDate <= drawDate && drawDate <= endDate;
+        })
+        .map(formatAndCalcWins, {
             game,
             drawing
         })
