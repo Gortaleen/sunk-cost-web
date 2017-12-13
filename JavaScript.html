@@ -136,9 +136,10 @@ let playsObjs = (function () {
      * @return {object} - Object containing one set of played numbers.
      */
     function processPlayedNumArr(arr, data, index) {
+        let ball;
+        let endDate = {};
         let numStrArr = data.slice(0, 6); // allow up to six numbers played.
         let startDate = {};
-        let endDate = {};
         if (data[8] !== null && data[8] !== undefined && data[8] !== "") {
             startDate = new Date(data[8]);
         } else {
@@ -170,9 +171,15 @@ let playsObjs = (function () {
                     curVal !== "")
                 .map((curVal) => curVal.toString().padStart(2, "0"));
         }
+        if (data[6] !== undefined &&
+            data[6] !== null &&
+            data[6] !== "" &&
+            typeof data[6] === "string") {
+            ball = data[6].padStart(2, "0");
+        }
         arr.push({
             numStrArr: numStrArr,
-            ball: data[6] || "",
+            ball: ball || "",
             bonus: data[7] || "",
             startDate: startDate,
             endDate: endDate
@@ -206,9 +213,10 @@ let drawsObjs = (function () {
     let objectsArr = [];
 
     function processDrawnNumArr(arr, data) {
-        let jackpot = dollarStrToInt(data[2]);
-        let estJackpot = dollarStrToInt(data[6]);
+        let ball;
         let drawDate = {};
+        let estJackpot = dollarStrToInt(data[6]);
+        let jackpot = dollarStrToInt(data[2]);
         let nextDrawDate = {};
         if (data[0] !== null && data[0] !== undefined && data[0] !== "") {
             drawDate = new Date(data[0]);
@@ -228,11 +236,17 @@ let drawsObjs = (function () {
             nextDrawDate.setSeconds(0);
             nextDrawDate.setMilliseconds(0);
         }
+        if (data[3] !== undefined &&
+            data[3] !== null &&
+            data[3] !== "" &&
+            typeof data[3] === "string") {
+            ball = data[3].padStart(2, "0");
+        }
         arr.push({
             drawDate: drawDate,
             numStrArr: data[1].split("-").map((curVal) => String(curVal)),
             jackpot: jackpot,
-            ball: data[3] || "",
+            ball: ball || "",
             bonus: data[4] || "",
             nextDrawDate: nextDrawDate,
             estJackpot: estJackpot
@@ -425,6 +439,7 @@ function compareDrawnToPlayed(gameName, datePrimitive) {
             year: "numeric"
         })
     );
+    // format header
     $("thead").append("<tr>");
     plays[0].numStrArr
         .forEach(
@@ -440,6 +455,7 @@ function compareDrawnToPlayed(gameName, datePrimitive) {
         $("thead tr").append("<th>" + game.bonus + "</th>");
     }
     $("thead tr").append("<th class=\"text-right\">Winnings!</th>");
+    // format data rows (tbody)
     total = plays.slice(1)
         .filter(function (playObj) {
             let drawDate = drawing.drawDate;
@@ -452,6 +468,7 @@ function compareDrawnToPlayed(gameName, datePrimitive) {
             drawing
         })
         .reduce((total, winnings) => total + winnings);
+    // footer
     $("tfoot").append(
         "<tr><th colspan=\"" + cols + "\"></th>" +
         "<th class=\"text-right\">Total:&nbsp;" +
