@@ -6,9 +6,9 @@
     drawnNumsArr, empty, endDate, estJackpot, filter, forEach, game, gameRules,
     gameRulesArr, get, getData, getOneDrawing, getTime, html, indexOf, jackpot,
     kittyArr, length, map, match, maximumFractionDigits, minimumFractionDigits,
-    month, name, nextDrawDate, numStrArr, padStart, parse, playedNumsArr, 
+    month, name, nextDrawDate, numStrArr, padStart, parse, playedNumsArr,
     projectName, push, reduce, replace, reverse, run, script, set, setHours,
-    setMilliseconds, setMinutes, setSeconds, slice, some, split, startDate, 
+    setMilliseconds, setMinutes, setSeconds, slice, some, split, startDate,
     strike, style, threshold, toLocaleDateString, toLocaleString, toLowerCase,
     toString, tooltip, values, withSuccessHandler, year
 */
@@ -74,7 +74,7 @@ let gameObjs = (function () {
 
     /**
      * Callback function
-     * Used by the reduce function to map match-strings to their respective 
+     * Used by the reduce function to map match-strings to their respective
      * values.
      * @param {object} obj - An accumulator.
      * @param {object} matchObjArr - A 1D array of match-strings and values.
@@ -91,7 +91,7 @@ let gameObjs = (function () {
     }
 
     /**
-     * @param {object} rulesObj - object whose "data" property is a 2D array of 
+     * @param {object} rulesObj - object whose "data" property is a 2D array of
      *                            game rules names and values.
      * @return {Object} An instance of the Game class.
      */
@@ -507,7 +507,7 @@ function viewDrawings(gameName) {
     playsObjs.get()[gameName][0]
         .numStrArr
         .forEach(function (ignore, index) {
-            $("thead tr").append("<th>Num" + index + "</th>");
+            $("thead tr").append("<th>Num" + (index + 1) + "</th>");
         });
     if (game.ball) {
         $("thead tr").append("<th>" +
@@ -581,7 +581,7 @@ function displayEstJackpots(gameRules, index) {
 
 /**
  * This is used as the criteria for an array"s--some--function.
- * @param {object} drawnNum is an object containing result data for one 
+ * @param {object} drawnNum is an object containing result data for one
  * drawing.
  * @return {boolean}
  */
@@ -596,7 +596,7 @@ function findActiveNum(playedNum) {
 
 /**
  * Returns "true" for drawings with at least one active play.
- * @param {object} drawnNum is an object containing result data for one 
+ * @param {object} drawnNum is an object containing result data for one
  * drawing.
  * @return {boolean}
  */
@@ -608,7 +608,7 @@ function activeNumber(drawnNum) {
 
 /**
  * This is used as the criteria for an array filter.
- * @param {object} drawnNum is an object containing result data for one 
+ * @param {object} drawnNum is an object containing result data for one
  * drawing.
  * @return {boolean}
  */
@@ -622,7 +622,7 @@ function resultThreshold(drawnNum) {
 }
 
 /**
- * @param {object} result is an object containing result data for one 
+ * @param {object} result is an object containing result data for one
  * drawing.
  */
 function formatValidResults(result) {
@@ -698,7 +698,7 @@ function displayHomePage() {
 /**
  * main
  * defines globals
- * @param {string} rawDataJsonStr - A stringified json object of data 
+ * @param {string} rawDataJsonStr - A stringified json object of data
  * arrays.
  */
 function main(rawDataJsonStr) {
