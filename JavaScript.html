@@ -554,24 +554,24 @@ function viewDrawings(gameName) {
 
 //********************** Display Estimated Jackpots ************************
 
-function displayEstJackpots(gameRules, index) {
+function displayEstJackpots(gameObjTemp, index) {
     "use strict";
-    let drawingObj = drawsObjs.get()[gameRules.name].slice(-1)[0];
+    let drawingObj = drawsObjs.get()[gameObjTemp.name].slice(-1)[0];
     let date = drawingObj.nextDrawDate;
-    let jackpot = "";debugger;
+    let jackpot = "";
     // TODO: make this less of a kluge
-    if (gameRules.data[6][2].toLowerCase() !== "jackpot") {
-        jackpot = gameRules.data[6][2];
+    if(typeof gameObjTemp.gameRules["51"] === "number") {
+        jackpot = gameObjTemp.gameRules["51"];
     } else {
-        jackpot = integerToUSD(drawingObj.estJackpot);
+        jackpot = drawingObj.estJackpot;
     }
     if (index === 0) {
         $("table#table0 tbody").empty();
     }
     $("table#table0 tbody").append(
-        "<tr title=\"View " + gameRules.name + " Drawings\"" +
-        "onClick=\"viewDrawings('" + gameRules.name + "')\">" +
-        "<td class=\"text-left\">" + gameRules.name + "</td>" +
+        "<tr title=\"View " + gameObjTemp.name + " Drawings\"" +
+        "onClick=\"viewDrawings('" + gameObjTemp.name + "')\">" +
+        "<td class=\"text-left\">" + gameObjTemp.name + "</td>" +
         "<td class=\"text-center\">" + date.toLocaleDateString(
             "en-US", {
                 month: "2-digit",
@@ -579,7 +579,7 @@ function displayEstJackpots(gameRules, index) {
                 year: "numeric"
             }) + "</td>" +
         "<td class=\"text-right\">" +
-        jackpot +
+        integerToUSD(jackpot) +
         "</td>" +
         "</tr>");
 }
@@ -710,6 +710,7 @@ function displayHomePage() {
  */
 function main(rawDataJsonStr) {
     "use strict";
+    let gameRulesArr = [];
     let rawDataJsonObj = JSON.parse(rawDataJsonStr);
 
     /** @global */
@@ -722,8 +723,10 @@ function main(rawDataJsonStr) {
     kittyObj.set(rawDataJsonObj.kittyArr[0][5]);
     /** @global */
     projectName = rawDataJsonObj.projectName;
+    
+    gameRulesArr = Object.values(gameObjs.get());
 
-    rawDataJsonObj.gameRulesArr.forEach(displayEstJackpots);
+    gameRulesArr.forEach(displayEstJackpots);
 
     // show kitty balance
     $("table#table0 tfoot").append(
@@ -732,7 +735,8 @@ function main(rawDataJsonStr) {
         "</th></tr>");
 
     $("table#table1 tbody").empty(); // clear the spinners
-    rawDataJsonObj.gameRulesArr.forEach(displayRecentResults);
+    
+    gameRulesArr.forEach(displayRecentResults);
 }
 
 function getDataAndLoadMain() {
