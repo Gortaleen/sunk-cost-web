@@ -558,6 +558,13 @@ function displayEstJackpots(gameRules, index) {
     "use strict";
     let drawingObj = drawsObjs.get()[gameRules.name].slice(-1)[0];
     let date = drawingObj.nextDrawDate;
+    let jackpot = "";debugger;
+    // TODO: make this less of a kluge
+    if (gameRules.data[6][2].toLowerCase() !== "jackpot") {
+        jackpot = gameRules.data[6][2];
+    } else {
+        jackpot = integerToUSD(drawingObj.estJackpot);
+    }
     if (index === 0) {
         $("table#table0 tbody").empty();
     }
@@ -572,7 +579,7 @@ function displayEstJackpots(gameRules, index) {
                 year: "numeric"
             }) + "</td>" +
         "<td class=\"text-right\">" +
-        integerToUSD(drawingObj.estJackpot) +
+        jackpot +
         "</td>" +
         "</tr>");
 }
