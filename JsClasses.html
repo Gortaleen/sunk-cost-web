@@ -37,6 +37,12 @@ function findMatches(playedObj) {
     if (result === "jackpot") {
         return drawnObj.jackpot;
     }
+    if (playedObj.bonus === 0 ||
+        playedObj.bonus === "" ||
+        playedObj.bonus === null ||
+        playedObj.bonus === undefined) {
+        return result;
+    }
     if (drawnObj.bonus === playedObj.bonus) {
         return result * drawnObj.bonus;
     }
