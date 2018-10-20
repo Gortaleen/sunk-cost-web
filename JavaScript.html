@@ -35,6 +35,11 @@ function dollarStrToInt(dollarStr) {
             dollarStr.match(/\d+(,\d{3})*(\.\d+)?/)[0]
             .replace(/,/g, "")) * 1000000;
     }
+    if (dollarStr.match(/^\$\d+(,\d{3})*(\.\d+)?\sBillion$/)) {
+        return Number(
+            dollarStr.match(/\d+(,\d{3})*(\.\d+)?/)[0]
+            .replace(/,/g, "")) * 1000000000;
+    }
     return undefined;
 }
 
