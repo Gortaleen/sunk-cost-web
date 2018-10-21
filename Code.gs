@@ -4,7 +4,7 @@ CacheService, HtmlService, Logger, PropertiesService, Session,
 SpreadsheetApp
 */
 
-var DEBUG = false;
+var DEBUG = true;
 
 //**************************************************************************
 

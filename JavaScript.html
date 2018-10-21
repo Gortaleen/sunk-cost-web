@@ -52,6 +52,9 @@ function integerToUSD(num) {
     let dividend = num;
     let divisor = 1000000;
     let quotient = (dividend / divisor) + 0;
+    if (quotient >= 1000) { //
+        return "$" + (quotient / 1000) + "&nbsp;Billion";
+    }
     if (quotient >= 40) { // mm and pb minimum jp is $40MM
         return "$" + quotient + "&nbsp;Million";
     }
